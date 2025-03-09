@@ -1,0 +1,160 @@
+{{!-- Payment Page using Handlebars --}}
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="p-3 card shadow-lg border-0 rounded-4 overflow-hidden">
+                <div class="card-header bg-gradient-primary text-white p-4">
+                        <h4 class="mb-0 text-center">Payment Details</h4>
+                </div>
+                
+                <div class="card-body p-4">
+                    <!-- Payment Options -->
+                    <div >
+                        <h5 class="mb-4">Select Registration Type</h5>
+                        <form id="payment-form">
+                            <input type="hidden" name="registrationId" value="{{registrationId}}">
+
+                            <div class="payment-options">
+                                {{#each paymentOptions}}
+                                <div class="payment-option mb-3">
+                                    <input class="form-check-input" type="radio" name="amount" id="amount{{@index}}"
+                                        value="{{this.value}}" required>
+                                    <label class="form-check-label payment-label" for="amount{{@index}}">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <span class="d-block fw-bold">{{this.title}}</span>
+                                                <small class="text-muted">{{this.description}}</small>
+                                            </div>
+                                            <span class="badge bg-primary rounded-pill">₹{{this.value}}</span>
+                                        </div>
+                                    </label>
+                                </div>
+                                {{/each}}
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-lg w-100 mt-4" id="pay-button">
+                                <i class="bi bi-lock me-2"></i> Pay Securely with Razorpay
+                            </button>
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .payment-option {
+        position: relative;
+    }
+
+    .form-check-input {
+        visibility: hidden;
+    }
+
+    .payment-label {
+        display: block;
+        padding: 1rem;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .payment-label:hover,
+    .form-check-input:checked+.payment-label {
+        background-color: #f0f7ff;
+        border-color: #0d6efd;
+    }
+
+    .payment-info .info-item {
+        display: flex;
+        align-items: center;
+        padding: 0.5rem 0;
+    }
+
+    .badge {
+        font-size: 1rem;
+        padding: 0.5rem 1rem;
+    }
+
+    .btn-lg {
+        padding: 1rem 2rem;
+        font-size: 1.1rem;
+    }
+</style>
+
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+    document.getElementById('payment-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        const amount = document.querySelector('input[name="amount"]:checked').value;
+        const registrationId = document.querySelector('input[name="registrationId"]').value;
+
+        fetch('/create-order', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ amount, registrationId })
+        })
+        .then(response => response.json())
+        .then(order => {
+            var options = {
+                "key": "rzp_test_8NokNgt8cA3Hdv",
+                "amount": order.amount,
+                "currency": "INR",
+                "name": "Co-operative Society",
+                "description": "Registration Fees",
+                "order_id": order.id,
+                "handler": function (response) {
+                    verifyPayment(response, order);
+                },
+                "prefill": {
+                    "name": "{{user.name}}",
+                    "email": "{{user.email}}",
+                    "contact": "{{user.phone}}"
+                },
+                "theme": {
+                    "color": "#3399cc"
+                }
+            };
+            var rzp1 = new Razorpay(options);
+            rzp1.open();
+        });
+    });
+
+    function verifyPayment(payment, order) {
+        fetch('/verify-payment', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ payment, order })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status) {
+                // Call API to change registration status to "payment-completed"
+                fetch(`/update-registration-status/${order.receipt}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ status: 'payment' })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.href = '/requested';
+                    } else {
+                        alert('Failed to update registration status');
+                    }
+                });
+            } else {
+                alert('Payment failed');
+            }
+        });
+    }
+</script>

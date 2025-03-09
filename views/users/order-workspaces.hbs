@@ -1,0 +1,190 @@
+{{!-- <h1>Ordered Workspaces Details</h1>
+
+<h2>Workspaces Information</h2>
+<table>
+    <tr>
+        <th>Workspaces Name</th>
+        <td>{{workspaces.workspace.wname}}</td>
+    </tr>
+    <tr>
+        <th>Seats</th>
+        <td>{{workspaces.workspace.seat}}</td>
+    </tr>
+    <tr>
+        <th>Price</th>
+        <td>{{workspaces.workspace.Price}}</td>
+    </tr>
+    <tr>
+        <th>Description</th>
+        <td>{{workspaces.workspace.desc}}</td>
+    </tr>
+    <tr>
+        <th>Builder Address</th>
+        <td>{{workspaces.workspace.baddress}}</td>
+    </tr>
+</table>
+
+<h2>User Information</h2>
+<table>
+    <tr>
+        <th>First Name</th>
+        <td>{{workspaces.user.Fname}}</td>
+    </tr>
+    <tr>
+        <th>Last Name</th>
+        <td>{{workspaces.user.Lname}}</td>
+    </tr>
+    <tr>
+        <th>Email</th>
+        <td>{{workspaces.user.Email}}</td>
+    </tr>
+    <tr>
+        <th>Phone</th>
+        <td>{{workspaces.user.Phone}}</td>
+    </tr>
+    <tr>
+        <th>Address</th>
+        <td>{{workspaces.user.Address}}</td>
+    </tr>
+    <tr>
+        <th>District</th>
+        <td>{{workspaces.user.District}}</td>
+    </tr>
+    <tr>
+        <th>Pincode</th>
+        <td>{{workspaces.user.Pincode}}</td>
+    </tr>
+</table>
+
+<h2>Order Details</h2>
+<table>
+    <tr>
+        <th>Total Amount</th>
+        <td>{{workspaces.totalAmount}}</td>
+    </tr>
+    <tr>
+        <th>Payment Method</th>
+        <td>{{workspaces.paymentMethod}}</td>
+    </tr>
+    <tr>
+        <th>Status</th>
+        <td>{{workspaces.status}}</td>
+    </tr>
+    <tr>
+        <th>Order Date</th>
+        <td>{{workspaces.date}}</td>
+    </tr>
+</table> --}}
+
+
+
+<br><br>
+<div class="page-content-wrapper py-3">
+    <div class="container">
+        <a href="/orders" class="btn btn-dark btn-sm mb-3">Back</a>
+        <div class="card invoice-card shadow">
+            <div class="card-body">
+                <!-- Download Invoice -->
+                <h3>Invoice</h3>
+                <h6 class="fz-12">Invoice No. #{{workspaces.workspace._id}}</h6>
+                <p class="mb-0 fz-12">Date: {{workspaces.workspace.date}}</p>
+
+
+                <hr class="mb-4">
+
+                <!-- Invoice Info -->
+                <div class="d-flex justify-content-between ">
+                    <div class="invoice-info  mb-4">
+                        <p style="font-size: 12px; margin-bottom:5px">Form : </p>
+                        <h5 class="mb-1 fz-14">{{workspaces.workspace.bname}}</h5>
+                        <h5 class="mb-1 fz-12">{{workspaces.workspace.baddress}}</h5>
+
+                    </div>
+                    <div class="invoice-info text-end  mb-4">
+                        <p style="font-size: 12px; margin-bottom:5px">To : </p>
+                        <h5 class="mb-1 fz-14">{{workspaces.user.Fname}} {{workspaces.user.Lname}}</h5>
+                        <h6 class="fz-12">{{workspaces.user.Email}} | {{workspaces.user.Phone}}</h6>
+                        <p class="mb-0 fz-12">Date: {{workspaces.workspace.date}}</p>
+                    </div>
+                </div>
+                <!-- Invoice Table -->
+                <div class="invoice-table">
+                    <div class="table-responsive">
+                        <table class="table table-bordered caption-top">
+                            <caption>Workspace Details</caption>
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Sl.</th>
+                                    <th>Title</th>
+                                    <th>Selected Date</th>
+                                    <th>Booking Status</th>
+                                    <th>Payment Status</th>
+
+                                    <th>Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>1</td>
+                                    <td>{{workspaces.workspace.wname}}</td>
+                                    <td>{{workspaces.deliveryDetails.selecteddate}}</td>
+                                    {{!--
+                                    <pre>{{{json workspaces}}}</pre> --}}
+
+                                    <td class="status">{{workspaces.status}}</td>
+                                    <td class="payment-method">{{workspaces.paymentMethod}}</td>
+                                    <td>{{workspaces.totalAmount}}/-</td>
+                                </tr>
+
+                            </tbody>
+                            <tfoot class="table-light">
+                                <tr>
+                                    <td class="text-end" colspan="5">Total:</td>
+                                    <td class="text-end">{{workspaces.totalAmount}}/-</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-end" colspan="5">Discount</td>
+                                    <td class="text-end">0/-</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-end" colspan="5">Grand Total:</td>
+                                    <td class="text-end">{{workspaces.totalAmount}}/-</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+                <a class="btn btn-sm btn-dark" onclick="window.print()"><i class="bi bi-printer me-1"></i>Print</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    document.querySelectorAll('td.payment-method').forEach(td => {
+        if (td.textContent.trim() === 'COD') {
+            td.textContent = 'Cash Not Paid';
+            td.style.color = 'red'; // Set text color to red
+        }
+        if (td.textContent.trim() === 'ONLINE') {
+            td.textContent = 'Cash Paid';
+            td.style.color = 'green'; // Set text color to red
+        }
+    });
+</script>
+
+<script>
+    document.querySelectorAll('td.status').forEach(td => {
+        if (td.textContent.trim() === 'placed') {
+            td.textContent = 'Pending';
+            td.style.color = 'red'; // Set text color to red
+        }
+        if (td.textContent.trim() === 'Accepted') {
+            td.style.color = 'green'; // Set text color to red
+        }
+        if (td.textContent.trim() === 'Rejected') {
+            td.style.color = 'red'; // Set text color to red
+        }
+    });
+</script>

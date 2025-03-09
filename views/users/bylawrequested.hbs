@@ -1,0 +1,232 @@
+<div class="container mt-20 mb-30">
+    <div class="card shadow-sm p-3">
+        <div class="card-body p-6">
+          <div class="d-flex justify-content-between align-items-center mb-6">
+                <h4 class="text-primary">
+                    <i class="bi bi-clock-history text-primary me-2"></i>
+                    Application Progress
+                </h4>
+                <a href="/bylawregistration" class="btn btn-primary">
+                    <i class="bi bi-plus-circle me-2"></i>Register New
+                </a>
+            </div>
+
+            {{#each bylawregistrations}}
+                        <!-- Registration Date -->
+            <div class="mb-4">
+                <strong>Date:</strong> {{this.date}}
+            </div>
+            <!-- Status Progress Bar -->
+            <div class="status-tracker">
+                <div class="progress-bar">
+                    <div class="progress-fill"></div>
+                </div>
+                <div class="steps">
+                    {{#each steps}}
+                    <div class="step 
+        {{#if (eq this.status 'active')}}active{{/if}} 
+        {{#if (eq this.status 'completed')}}completed{{/if}} 
+        {{#if (eq this.status 'rejected')}}rejected{{/if}}">
+                        <div class="step-icon">
+                            {{#if (eq this.name 'form-submitted')}}<i class="bi bi-1-circle"></i>{{/if}}
+                            {{#if (eq this.name 'payment')}}<i class="bi bi-credit-card"></i>{{/if}}
+                            {{#if (eq this.name 'assistant-registrar-review')}}<i class="bi bi-person-check"></i>{{/if}}
+                            {{#if (eq this.name 'deputy-registrar-review')}}<i
+                                class="bi bi-person-check-fill"></i>{{/if}}
+                            {{#if (eq this.name 'joint-registrar-review')}}<i class="bi bi-person-badge"></i>{{/if}}
+                            {{#if (eq this.name 'completed')}}<i class="bi bi-check-circle-fill"></i>{{/if}}
+                        </div>
+                        <span>
+                            {{#if (eq this.name 'form-submitted')}}Form Submitted{{/if}}
+                            {{#if (eq this.name 'payment')}}Payment{{/if}}
+                            {{#if (eq this.name 'assistant-registrar-review')}}Assistant Registrar{{/if}}
+                            {{#if (eq this.name 'deputy-registrar-review')}}Deputy Registrar{{/if}}
+                            {{#if (eq this.name 'joint-registrar-review')}}Joint Registrar{{/if}}
+                            {{#if (eq this.name 'completed')}}Completed{{/if}}
+                        </span>
+                    </div>
+                    {{/each}}
+                </div>
+            </div>
+
+            <!-- Current Status -->
+            <div class="m-6 flex items-center gap-3">
+                {{#if (eq this.status "form-submitted")}}
+                <a href="/bylawpayment/{{this._id}}" class="btn btn-primary">
+                    <i class="bi bi-credit-card me-2"></i>Proceed to Payment
+                </a>
+                {{/if}}
+                {{#if (eq this.status "completed")}}
+                <button data-url="{{this.finalReport}}" class="btn btn-success view-pdf">
+                    <i class="bi bi-file-earmark-pdf me-2"></i>View Report
+                </button>
+
+                <button data-url="{{this.finalReport}}" class="btn btn-primary download-pdf">
+                    <i class="bi bi-download me-2"></i>Download Report
+                </button>
+                {{/if}}
+            </div>
+
+            <!-- Rejection Message -->
+            {{#if (eq this.status 'rejected')}}
+            <div class="alert alert-danger mt-4">
+                <div class="flex items-center">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    <div>
+                        <strong>Rejected by {{this.rejectedBy}}</strong>
+                        <p class="mb-0">{{this.reason}}</p>
+                    </div>
+                </div>
+            </div>
+            {{/if}}
+            <hr/>   
+
+            {{/each}}
+        </div>
+    </div>
+</div>
+
+<!-- PDF Viewer Modal -->
+<div class="modal fade" id="pdfModal" tabindex="-1" aria-labelledby="pdfModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="pdfModalLabel">Doc Viewer</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <iframe id="pdfViewer" src="" width="100%" height="600px" style="border: none;"></iframe>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .status-tracker {
+        position: relative;
+        margin: 30px 0;
+        padding: 0 10px;
+    }
+
+    .progress-bar {
+        position: absolute;
+        top: 50%;
+        left: 0;
+        transform: translateY(-50%);
+        height: 4px;
+        width: 100%;
+        background-color: #e9ecef;
+        z-index: 1;
+    }
+
+    .steps {
+        position: relative;
+        display: flex;
+        justify-content: space-between;
+        z-index: 3;
+    }
+
+    .step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+    }
+
+    .step-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #fff;
+        border: 2px solid #e9ecef;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        color: #6c757d;
+        transition: all 0.3s ease;
+    }
+
+    .step.active .step-icon {
+        border-color: #0d6efd;
+        background: #0d6efd;
+        color: #fff;
+    }
+
+    .step.completed .step-icon {
+        border-color: #28a745;
+        background: #28a745;
+        color: #fff;
+    }
+
+    .step.rejected .step-icon {
+        border-color: #dc3545;
+        background: #dc3545;
+        color: #fff;
+    }
+</style>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const baseUrl = window.location.origin;
+
+        document.querySelectorAll(".view-pdf").forEach(button => {
+            button.addEventListener("click", function () {
+                const pdfPath = this.getAttribute("data-url");
+                console.log("pdfPath", pdfPath);
+                const fullPdfUrl = new URL(pdfPath, baseUrl).href; // Ensures proper URL formatting
+                console.log(fullPdfUrl, 'PDF')
+                fetch(fullPdfUrl, { method: 'HEAD' })
+                    .then(response => {
+                        if (response.ok) {
+                            document.getElementById("pdfViewer").src = fullPdfUrl;
+                            console.log("fullPdfUrl", fullPdfUrl);
+                            new bootstrap.Modal(document.getElementById("pdfModal")).show();
+                        } else {
+                            alert("Error: PDF file not found (404)");
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Error fetching PDF:", error);
+                        alert("Error: Unable to load PDF");
+                    });
+            });
+        });
+
+
+        document.querySelectorAll(".download-pdf").forEach(button => {
+            button.addEventListener("click", function () {
+                const pdfPath = this.getAttribute("data-url");
+                console.log("pdfPath", pdfPath);
+                const fullPdfUrl = new URL(pdfPath, baseUrl).href; // Ensures proper URL formatting
+                console.log(fullPdfUrl, 'PDF')
+                fetch(fullPdfUrl, { method: 'HEAD' })
+                    .then(response => {
+                        if (response.ok) {
+                            const link = document.createElement('a');
+                            link.href = fullPdfUrl;
+                            link.download = pdfPath.split('/').pop(); // Extracts the file name from the URL
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                        } else {
+                            alert("Error: PDF file not found (404)");
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Error fetching PDF:", error);
+                        alert("Error: Unable to load PDF");
+                    });
+            });
+        });
+
+        const previewSwitch = document.getElementById('previewSwitch');
+        const currentUrl = window.location.href;
+        previewSwitch.checked = currentUrl.includes('/preview');
+
+        previewSwitch.addEventListener('change', function () {
+            window.location.href = previewSwitch.checked ? '/preview/requested' : '/requested';
+        });
+    });
+</script>

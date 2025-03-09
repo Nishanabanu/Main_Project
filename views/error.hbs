@@ -1,0 +1,22 @@
+<style>
+  .middle-content {
+    display: flex;
+    gap: 20px;
+    text-align: left;
+    justify-content: center;
+    align-items: left;
+    height: 100vh;
+  }
+</style>
+<div class="container-sm">
+  <div class="middle-content">
+    <div class="" role="alert">
+      <h1 class="alert-heading">404 {{message}}</h1>
+      <h2>{{error.status}}</h2>
+
+      <pre>{{error.stack}}</pre>
+      <hr>
+      <p class="mb-0">Unfortunately the page you are looking for has been moved or deleted</p>
+    </div>
+  </div>
+</div>

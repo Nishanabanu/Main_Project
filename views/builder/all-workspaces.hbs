@@ -1,0 +1,76 @@
+<div class="page-content-wrapper main-content">
+    <div class="container-md">
+        <div class="d-flex justify-content-between align-items-center">
+            <h4 class="mt-3 mb-3">Manage Your Workspace</h4>
+            <a href="/builder/add-workspace" class="btn btn-dark">+ Add New Workspace</a>
+        </div>
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="w-100" id="dataTable">
+                        <thead>
+                            <tr>
+                                <th>No.</th>
+                                <th>Image</th>
+                                <th data-type="date" data-format="YYYY/DD/MM">Added Date</th>
+                                <th>Title</th>
+                                <th>Available Seats</th>
+                                <th>Price</th>
+                                <th>Type</th>
+                                <th>Description</th>
+                                <th>Manage</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{#each workspaces}}
+                            <tr>
+                                <td>{{incremented @index}}</td>
+                                <td><img src="/images/workspace-images/{{this._id}}.png" alt="" style="width: 5rem">
+                                </td>
+                                <td>{{this.date}}</td>
+                                <td>{{this.wname}}</td>
+                                <td>{{this.seat}}</td>
+                                <td>{{this.Price}}</td>
+                                <td>per {{this.defaultSelect}}</td>
+                                <td>{{this.desc}}</td>
+                                <td>
+                                    <div class="d-flex gap-2">
+                                        {{!-- <a href="/builder/edit-workspace/{{this._id}}"
+                                            class="btn btn-dark btn-sm"><i class="bi bi-pen"></i></a> --}}
+                                        <a href="javascript:void(0);"
+                                            onclick="deleteWorkspace('{{this._id}}', '{{this.wname}}')"
+                                            class="btn btn-danger btn-sm">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {{/each}}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    function deleteWorkspace(id, wname) {
+        Swal.fire({
+            title: `Are you sure you want to delete "${wname}"?`,
+            text: '',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#33ff68',
+            cancelButtonColor: '#d29eee',
+            confirmButtonText: 'Yes!',
+            cancelButtonText: 'No'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Redirect to the delete route if confirmed
+                window.location.href = `/builder/delete-workspace/${id}`;
+            }
+        });
+    }
+</script>

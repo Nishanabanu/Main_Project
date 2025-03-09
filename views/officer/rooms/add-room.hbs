@@ -1,0 +1,148 @@
+<style>
+    .custum-file-upload {
+        height: 200px;
+        width: 300px;
+        display: flex;
+        flex-direction: column;
+        align-items: space-between;
+        gap: 20px;
+        cursor: pointer;
+        align-items: center;
+        justify-content: center;
+        border: 2px dashed #cacaca;
+        background-color: rgba(255, 255, 255, 1);
+        padding: 1.5rem;
+        border-radius: 10px;
+        box-shadow: 0px 48px 35px -48px rgba(0, 0, 0, 0.1);
+    }
+
+    .custum-file-upload .icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .custum-file-upload .icon svg {
+        height: 80px;
+        fill: rgba(75, 85, 99, 1);
+    }
+
+    .custum-file-upload .text {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .custum-file-upload .text span {
+        font-weight: 400;
+        color: rgba(75, 85, 99, 1);
+    }
+
+    .custum-file-upload input {
+        display: none;
+    }
+</style>
+
+<main id="main" class="main">
+
+    <div class="pagetitle">
+        <h1>Add Room</h1>
+        <nav>
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/admin">Home</a></li>
+                <li class="breadcrumb-item">Rooms</li>
+                <li class="breadcrumb-item active">Add Room</li>
+            </ol>
+        </nav>
+    </div><!-- End Page Title -->
+    <section class="section">
+        <div class="row">
+            <div class="col-lg-7">
+                <div class="card">
+                    <div class="card-body">
+                        {{!-- <h5 class="card-title">Multi Columns Form</h5> --}}
+
+                        <!-- Multi Columns Form -->
+                        <form class="row g-3 mt-3" action="/admin/rooms/add-room" enctype="multipart/form-data"
+                            method="POST">
+                            <div class="col-md-6">
+                                <label for="inputName5" class="form-label">Room Name</label>
+                                <input type="text" class="form-control" name="roomname" id="inputName5">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="inputName5" class="form-label">Room Number</label>
+                                <input type="text" class="form-control" name="roomnumber" id="inputName5">
+                            </div>
+                            <div class="col-md-12">
+                                <label for="inputName5" class="form-label">Est Cost</label>
+                                <input type="text" class="form-control" name="Price" id="inputName5">
+                            </div>
+
+                            <p><b>Est Time</b></p>
+                            <hr class="mt-0 mb-0">
+                            <div class="col-md-6">
+                                <label for="inputName5" class="form-label">From (Check in)</label>
+                                <input type="time" class="form-control" name="in" id="inputName5">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="inputName5" class="form-label">To (Check out)</label>
+                                <input type="time" class="form-control" name="out" id="inputName5">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="inputEmail5" class="form-label">Floor</label>
+                                <input type="text" class="form-control" name="floor" id="inputEmail5">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="inputPassword5" class="form-label">Room Emergency Number</label>
+                                <input type="number" name="ren" class="form-control" id="inputPassword5">
+                            </div>
+
+                            <div class="col-md-12">
+                                <label for="inputEmail5" class="form-label">Description</label>
+                                <textarea type="text" class="form-control" name="desc" id="inputEmail5"></textarea>
+                            </div>
+
+
+                            <div class="col-md-12">
+                                <label for="inputEmail5" class="form-label">List Fesilities</label>
+                                <textarea type="text" class="form-control" name="fesilities"
+                                    id="inputEmail5"></textarea>
+                            </div>
+
+
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="col-lg-5">
+                <div class="card p-3">
+                    <div class="card-body">
+                        <label class="mb-3">Upload Photos</label>
+                        <input type="file" name="Image1" class="form-control mb-3" id="inputPassword5">
+
+                        <input type="file" name="Image2" class="form-control mb-3" id="inputPassword5">
+
+                        <input type="file" name="Image3" class="form-control mb-3" id="inputPassword5">
+
+                        <input type="file" name="Image4" class="form-control mb-3" id="inputPassword5">
+
+                        <input type="file" name="Image5" class="form-control mb-3" id="inputPassword5">
+
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+
+    </section>
+    <div class="mb-4" style="float: inline-end;
+">
+        <button type="submit" class="btn btn-primary">Submit</button>
+        <button type="reset" class="btn btn-secondary">Reset</button>
+    </div>
+    </form>
+
+
+</main><!-- End #main -->

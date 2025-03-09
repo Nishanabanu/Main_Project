@@ -1,0 +1,152 @@
+<div class="page-content-wrapper mt-5 py-3"><br><br>
+    <div class="container-lg">
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="card product-details-card mb-3">
+                    <div class="card-body">
+                        <div class="product-gallery-wrapper">
+                            <div class="product-gallery"><a href="/images/workspace-images/{{workspace._id}}.png"><img
+                                        class="rounded" src="/images/workspace-images/{{workspace._id}}.png"
+                                        alt=""></a><a href="/images/workspace-images/{{workspace._id}}.png"><img
+                                        class="rounded" src="/images/workspace-images/{{workspace._id}}.png"
+                                        alt=""></a><a href="/images/workspace-images/{{workspace._id}}.png"><img
+                                        class="rounded" src="/images/workspace-images/{{workspace._id}}.png" alt=""></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="card product-details-card mb-3 direction-rtl">
+                    <div class="card-body">
+                        <h3>{{workspace.wname}}</h3>
+                        <h5>{{workspace.Price}}/-</h5>
+                        <p><b>Location: </b>{{workspace.baddress}}</p>
+                        <h5>Description</h5>
+                        <p>{{workspace.desc}}</p>
+
+                        <div class="input-group">
+                            <button class="btn btn-dark w-100 mt-4 buy-now" data-id="{{workspace._id}}"
+                                data-seats="{{workspace.seat}}" onclick="buyNow('{{workspace._id}}')">
+                                Book Now
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card product-details-card mb-3 direction-rtl">
+                    <div class="card-body">
+                        <h5>Amenities</h5>
+                        <p>{{{workspace.amenities}}}</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="card p-5">
+            <div class="row g-5">
+                <div class="col-lg-4">
+                    <h5>Add your review</h5>
+                    <hr>
+                    {{#if user}}
+                    <form action="/add-feedback" method="post" class="mb-3">
+                        <input type="hidden" name="workspaceId" value={{workspace._id}}>
+                        <input type="hidden" name="builderId" value={{workspace.builderId}}>
+
+                        <!-- Hidden field for workspace ID -->
+                        <label for="" class="mb-2">Your name</label>
+                        <input class="form-control" type="text" name="username" value={{user.Fname}} {{user.Lname}}>
+                        <label for="" class="mb-2 mt-3">Your Feedback</label>
+                        <textarea class="form-control " type="text" name="text" required
+                            placeholder="Enter your feedback"></textarea>
+                        <button type="submit" class="btn btn-dark mt-3 w-100">Submit</button>
+                    </form>
+                    {{else}}
+                    <a href="/signin" class="btn btn-dark">Please login to add your reviews</a>
+                    {{/if}}
+                </div>
+                <div class="col-lg-8">
+                    <div class="feedback-section ">
+                        <h5>All Review</h5>
+                        <hr>
+                        {{#each feedbacks}}
+                        <div class="card p-3 shadow mb-2">
+                            <p class="date-cell"><small>Submitted on {{ this.createdAt}}</small></p>
+
+                            <p>
+                                <strong class="">{{this.username}}<br></strong>
+                            </p>
+                            <p>{{this.text}}</p>
+                        </div>
+                        {{else}}
+                        <p>No feedback available for this workspace.</p>
+                        {{/each}}
+                    </div>
+                </div>
+            </div>
+
+
+
+        </div>
+    </div>
+
+</div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Select the "Book Now" button
+        const buyNowButton = document.querySelector('.buy-now');
+
+        if (buyNowButton) {
+            const seatsAvailable = parseInt(buyNowButton.getAttribute('data-seats'), 10);
+
+            if (seatsAvailable === 0) {
+                buyNowButton.disabled = true; // Disable the button if sold out
+                buyNowButton.textContent = 'Sold Out'; // Change button text
+                buyNowButton.classList.add('disabled'); // Optionally add a disabled class for styling
+            } else {
+                buyNowButton.addEventListener('click', function () {
+                    buyNow(buyNowButton.getAttribute('data-id')); // Call the buyNow function
+                });
+            }
+        }
+    });
+
+    function buyNow(workspaceId) {
+        // Your buy now logic here
+        alert('Booking workspace with ID: ' + workspaceId);
+        // Implement your booking logic (e.g., make an API call)
+    }
+</script>
+
+
+<script>
+    function buyNow(workspaceId) {
+        window.location.href = '/place-order/' + workspaceId;
+    }
+
+</script>
+
+<script>
+    document.querySelectorAll('.date-cell').forEach(function (cell) {
+        const rawDate = cell.textContent;  // Get the original date string
+        const date = new Date(rawDate);    // Convert it to a Date object
+
+        // Format the date (e.g., 12 Oct 2024 | 11:50)
+        const formattedDate = date.toLocaleDateString('en-GB', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric'
+        });
+
+        const formattedTime = date.toLocaleTimeString('en-GB', {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+
+        // Set the formatted date and time back in the cell
+        cell.textContent = `${formattedDate} | ${formattedTime}`;
+    });
+
+</script>

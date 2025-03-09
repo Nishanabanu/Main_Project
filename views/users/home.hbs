@@ -1,0 +1,71 @@
+<div class="dashboard-body">
+
+    <div class="row gy-4">
+        <div class="col-lg-9">
+
+            <h2>Society Home</h2>
+
+            <!-- Widgets Start -->
+            <div class="row gy-4">
+                <div class="col-xxl-3 col-sm-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h4 class="mb-2"></h4>
+                            <span class="text-gray-600">Total Applications</span>
+                            <div class="flex-between gap-8 mt-16">
+                                <span class="flex-shrink-0 w-48 h-48 flex-center rounded-circle bg-main-600 text-white text-2xl">
+                                    <i class="ph-fill ph-book-open"></i>
+                                </span>
+                                <div class="rounded-tooltip-value">{{totalApplication}}</div> <!-- Display totalApplication -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xxl-3 col-sm-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h4 class="mb-2"></h4>
+                            <span class="text-gray-600">Approved Applications</span>
+                            <div class="flex-between gap-8 mt-16">
+                                <span class="flex-shrink-0 w-48 h-48 flex-center rounded-circle bg-main-two-600 text-white text-2xl">
+                                    <i class="ph-fill ph-certificate"></i>
+                                </span>
+                                <div class="rounded-tooltip-value">{{approvedApplication}}</div> <!-- Display approvedApplication -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xxl-3 col-sm-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h4 class="mb-2"></h4>
+                            <span class="text-gray-600">Rejected Applications</span>
+                            <div class="flex-between gap-8 mt-16">
+                                <span class="flex-shrink-0 w-48 h-48 flex-center rounded-circle bg-purple-600 text-white text-2xl">
+                                    <i class="ph-fill ph-graduation-cap"></i>
+                                </span>
+                                <div class="rounded-tooltip-value">{{rejectedApplication}}</div> <!-- Display rejectedApplication -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xxl-3 col-sm-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h4 class="mb-2"></h4>
+                            <span class="text-gray-600">Processing Applications</span>
+                            <div class="flex-between gap-8 mt-16">
+                                <span class="flex-shrink-0 w-48 h-48 flex-center rounded-circle bg-warning-600 text-white text-2xl">
+                                    <i class="ph-fill ph-users-three"></i>
+                                </span>
+                                <div class="rounded-tooltip-value">{{processingApplications}}</div> <!-- Display processingApplications -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</div>

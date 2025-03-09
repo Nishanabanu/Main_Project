@@ -1,0 +1,85 @@
+<div class="page-content-wrapper main-content">
+    <div class="container-md">
+
+        <form action="/admin/edit-workspace/{{workspace._id}}" enctype="multipart/form-data" method="POST">
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label class="form-label" for="exampleInputText">Workspace Name</label>
+                                <input class="form-control" id="exampleInputText" name="wname"
+                                    value="{{workspace.wname}}" type="text" placeholder="">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="exampleInputText">Available Seats</label>
+                                <input class="form-control" id="exampleInputText" name="seat" value="{{workspace.seat}}"
+                                    type="text" placeholder="">
+                            </div>
+
+                            <div class="d-flex gap-2">
+
+                                <div class="form-group w-100">
+                                    <label class="form-label" for="exampleInputText"> Price</label>
+                                    <input class="form-control" id="exampleInputText" name="Price"
+                                        value="{{workspace.Price}}" type="number" placeholder="">
+                                </div>
+
+                                <div class="form-group w-100">
+                                    <label class="form-label" for="defaultSelect">Select Format</label>
+                                    <select class="form-select form-control-clicked " id="defaultSelect" name="format"
+                                        aria-label="Default select example">
+                                        <option value="{{workspace.format}}" selected="">{{workspace.format}}</option>
+                                        <option value="hour">Per Hour</option>
+                                        <option value="day">Per Day</option>
+                                        <option value="month">Per Month</option>
+                                        <option value="year">Per Year</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="exampleInputText">Description</label>
+                                <textarea class="form-control" name="desc">{{workspace.desc}}</textarea>
+
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="exampleInputText"> Locality</label>
+                                <textarea class="form-control" name="baddress">{{workspace.Name}}</textarea>
+                            </div>
+
+                            {{!-- <div class="form-group">
+                                <label class="form-label" for="inputDate">Date picker</label>
+                                <input class="form-control" id="inputDate" type="date">
+                            </div> --}}
+
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label class="form-label" for="exampleInputText">Workspace Image</label>
+                                <input class="form-control" id="exampleInputText" name="Image" type="file">
+                                <img src="/images/workspace-images/{{workspace._id}}.png" alt=""
+                                    style="width: 10rem; margin-bottom: 8px;" id="imgView">
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <button type="submit" class="btn btn-dark mt-4">Update</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    function viewImage(event) {
+        document.getElementById("imgView").src = URL.createObjectURL(event.target.files[0]);
+    }
+</script>

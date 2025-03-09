@@ -1,0 +1,114 @@
+<style>
+    .text-danger {
+        font-size: 11px;
+        margin-top: 5px;
+    }
+
+    label {
+        font-size: 13px;
+        margin-bottom: 10px;
+    }
+</style>
+<!-- Login Wrapper Area -->
+<div class="login-wrapper d-flex  align-items-center justify-content-center">
+    <div class="custom-container">
+        <div class="text-center px-4"><img class="login-intro-img" src="assets/img/bg-img/36.png" alt=""></div>
+        <!-- Register Form -->
+        <h4 class="text-center mb-3" style="font-weight: 600;">COSPACE<span style="color: crimson;">.</span></h4>
+
+        <div class="card shadow p-4">
+
+            <div class="register-form mt-4">
+                <h6 class="mb-4 text-center">Hey User, Welcome<br> To Builder</h6>
+                {{#if signInErr}}
+
+                <p class="text-danger text-center ">{{signInErr}}</p>
+
+                {{/if}}
+                <form action="/builder/signup" method="POST" enctype="multipart/form-data" autocomplete="off">
+                    <input type="hidden" name="date" id="datetime">
+
+                    <div class="form-group">
+                        <input class="form-control" type="text" name="Companyname" value="{{Companyname}}"
+                            placeholder="Your Company Name" pattern="[A-Za-z\s]+" title="Only letters are allowed">
+                        {{#if errors.Companyname}}<div class="text-danger">{{errors.Companyname}}</div>{{/if}}
+                    </div>
+
+                    <div class="form-group">
+                        <input class="form-control" type="email" name="Email" value="{{Email}}"
+                            placeholder="Your Email">
+                        {{#if errors.email}}<div class="text-danger">{{errors.email}}</div>{{/if}}
+                    </div>
+                    <div class="form-group">
+                        <input class="form-control" type="number" name="Phone" value="{{Phone}}"
+                            placeholder="Your Phone Number">
+                        {{#if errors.phone}}<div class="text-danger">{{errors.phone}}</div>{{/if}}
+                    </div>
+                    <div class="form-group">
+                        <textarea class="form-control" name="Address" placeholder="Your Address">{{Address}}</textarea>
+                        {{#if errors.address}}<div class="text-danger">{{errors.address}}</div>{{/if}}
+                    </div>
+                    <div class="row g-1">
+                        <div class="col-lg-7">
+                            <div class="form-group">
+                                <input class="form-control" type="text" name="City" value="{{City}}"
+                                    placeholder="Your City Name" pattern="[A-Za-z]+" title="Only letters are allowed">
+                                {{#if errors.city}}<div class="text-danger">{{errors.city}}</div>{{/if}}
+                            </div>
+                        </div>
+                        <div class="col-lg-5">
+                            <div class="form-group">
+                                <input class="form-control" type="number" name="Pincode" value="{{Pincode}}"
+                                    placeholder="Your Pincode">
+                                {{#if errors.pincode}}<div class="text-danger">{{errors.pincode}}</div>{{/if}}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group position-relative">
+                        <input class="form-control" id="psw-input" name="Password" value="{{Password}}" type="password"
+                            placeholder="Enter Password">
+                        {{#if errors.password}}<div class="text-danger">{{errors.password}}</div>{{/if}}
+                        <div class="position-absolute" id="password-visibility">
+                            <i class="bi bi-eye"></i><i class="bi bi-eye-slash"></i>
+                        </div>
+                    </div>
+                    <div class="form-group ">
+                        <label>Company Logo</label>
+                        <input class="form-control" name="Image" accept="image/*" value="{{Image}}" type="file"
+                            required>
+                        {{#if errors.Image}}<div class="text-danger">{{errors.Image}}</div>{{/if}}
+                    </div>
+            </div>
+            <button class="btn btn-dark w-100" type="submit">Signup</button>
+            </form>
+
+
+        </div>
+        <!-- Login Meta -->
+        <div class="login-meta-data text-center">
+            {{!-- <a class="stretched-link forgot-password d-block mt-3 mb-1" href="page-forget-password.html">Forgot
+                Password?</a> --}}
+            <p class="mb-0 mt-3" style="font-size: ;">Already have an account? <a class="stretched-link"
+                    href="/builder/signin">Signin Now</a>
+            </p>
+        </div>
+    </div>
+
+</div>
+</div>
+
+
+<script>
+    // Get current date and time
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = (now.getMonth() + 1).toString().padStart(2, '0');
+    const day = now.getDate().toString().padStart(2, '0');
+    const hours = ((now.getHours() + 11) % 12 + 1).toString().padStart(2, '0'); // Convert to 12-hour format
+    const minutes = now.getMinutes().toString().padStart(2, '0');
+    const ampm = now.getHours() >= 12 ? 'PM' : 'AM';
+
+    // Set default value to current date and time in 12-hour format with AM/PM
+    const defaultDateTime = `${year}-${month}-${day}T${hours}:${minutes}`;
+    document.getElementById('datetime').value = defaultDateTime;
+</script>

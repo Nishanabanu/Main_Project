@@ -1,0 +1,47 @@
+<!-- Login Wrapper Area -->
+<div class="login-wrapper d-flex  align-items-center justify-content-center">
+    <div class="custom-container">
+        <div class="text-center px-4"><img class="login-intro-img" src="assets/img/bg-img/36.png" alt=""></div>
+        <!-- Register Form -->
+        <h4 class="text-center mb-3" style="font-weight: 600;">COSPACE<span style="color: crimson;"></span></h4>
+
+        <div class="card shadow p-4">
+
+            <div class="register-form mt-4">
+                <h6 class="mb-4 text-center"> to Workspace.</h6>
+                {{#if signInErr}}
+
+                <p class="text-danger text-center ">{{signInErr}}</p>
+
+                {{/if}}
+                <form action="/builder/signin" method="POST" autocomplete="off">
+                    <div class="form-group">
+                        <input class="form-control" type="email" name="Email" value="{{Email}}"
+                            placeholder="Your Email">
+                    </div>
+                    <div class="form-group position-relative">
+                        <input class="form-control" id="psw-input" name="Password" value="{{Password}}" type="password"
+                            placeholder="Enter Password">
+                        <div class="position-absolute" id="password-visibility"><i class="bi bi-eye"></i><i
+                                class="bi bi-eye-slash"></i></div>
+                    </div>
+                    <button class="btn btn-dark w-100" type="submit">Sign In</button>
+                </form>
+            </div>
+            <!-- Login Meta -->
+            <div class="login-meta-data text-center">
+                {{!-- <a class="stretched-link forgot-password d-block mt-3 mb-1"
+                    href="page-forget-password.html">Forgot Password?</a> --}}
+                <p class="mb-0 mt-3" style="font-size: ;">Didn't have an account? <a class="stretched-link"
+                        href="/builder/signup">Register
+                        Now</a>
+                </p>
+            </div>
+        </div>
+
+        <a href="/">
+            <p class="text-center text-underline mt-3 ">Back to home</p>
+        </a>
+
+    </div>
+</div>

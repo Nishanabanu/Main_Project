@@ -1,0 +1,256 @@
+<div class="container mt-20 mb-30">
+    <div class="card">
+        <div class="card-header border-bottom border-gray-100 flex-align gap-8">
+            <h5 class="mb-0">By Law Registration</h5>
+        </div>
+        <div class="card-body">
+            <form action="/bylawregistration" method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="date" id="datetime">
+                <input type="hidden" name="userId" value="{{user._id}}">
+                <input type="hidden" name="status" value="submitted">
+
+                <div class="row mb-14">
+                    <div class="col-12 mb-15">
+                        <label class="form-label mb-8 h6">Date of the General Body meeting at which amendment was
+                            made</label>
+                        <div class="position-relative">
+                            <input class="form-control py-11" type="date" name="DateGB" placeholder="Enter Here"
+                                required>
+                        </div>
+                    </div>
+
+                    <div class="col-12 mb-15">
+                        <label class="form-label mb-8 h6">No.of days given to convence the General Body meeting</label>
+                        <div class="position-relative">
+                            <input class="form-control py-11" type="number" name="convencedays" placeholder="Enter Here"
+                                required>
+                        </div>
+                    </div>
+
+                    <div class="col-12 mb-15">
+                        <label class="form-label mb-8 h6">No.of days notice required as per the bye-laws of the General
+                            Body</label>
+                        <div class="position-relative">
+                            <input class="form-control py-11" type="number" name="noticedays" placeholder="Enter Here"
+                                required>
+                        </div>
+                    </div>
+
+
+                    <div class="col-12 mb-15">
+                        <label class="form-label mb-8 h6">Total No.of members of the date of such meeting</label>
+                        <div class="position-relative">
+                            <input class="form-control py-11" type="number" name="members" placeholder="Enter Here"
+                                required>
+                        </div>
+                    </div>
+
+
+
+                    <div class="col-12 mb-15">
+                        <label class="form-label mb-8 h6">No. of members who formed quorum</label>
+                        <div class="position-relative">
+                            <input class="form-control py-11" type="number" name="quorum" placeholder="Enter Here"
+                                required>
+                        </div>
+                    </div>
+
+
+
+                    <div class="col-12 mb-15">
+                        <label class="form-label mb-8 h6">No. of members present at such meeting</label>
+                        <div class="position-relative">
+                            <input class="form-control py-11" type="number" name="present" placeholder="Enter Here"
+                                required>
+                        </div>
+                    </div>
+
+
+                    <div class="col-12 mb-15">
+                        <label class="form-label mb-8 h6">No. of members who exercised their votes at the
+                            meeting</label>
+                        <div class="position-relative">
+                            <input class="form-control py-11" type="number" name="votes" placeholder="Enter Here"
+                                required>
+                        </div>
+                    </div>
+
+
+                    <div class="col-12 mb-15">
+                        <label class="form-label mb-8 h6">No. of members who voted for the amendment</label>
+                        <div class="position-relative">
+                            <input class="form-control py-11" type="number" name="amendmentvotes"
+                                placeholder="Enter Here" required>
+                        </div>
+                    </div>
+
+
+                    <div class="col-12 mb-15">
+                        <label class="form-label mb-8 h6">Enter the department's names who accept the financial support
+                        </label>
+                        <div class="position-relative">
+                            <Textarea class="form-control py-11" name="financial" placeholder="Enter Here"
+                                required></Textarea>
+                        </div>
+                    </div>
+
+
+                    <div class="col-12 mb-15">
+                        <label class="form-label mb-8 h6">Minutes of Director Board Meeting</label>
+                        <div class="position-relative">
+                            <input class="form-control py-11" type="file" name="DirectorBoardMinutes"
+                                accept=".pdf,.jpg,.jpeg,.png" required>
+                            <small class="form-text text-muted">Upload Minutes of Director Board Meeting document (Max Size: 1024KB)</small>
+                        </div>
+                    </div>
+
+                    <div class="col-12 mb-15">
+                        <label class="form-label mb-8 h6">Minutes of Annual/Special GB Meeting</label>
+                        <div class="position-relative">
+                            <input class="form-control py-11" type="file" name="AnnualSpecialGBMinutes"
+                                accept=".pdf,.jpg,.jpeg,.png" required>
+                            <small class="form-text text-muted">Upload Minutes of Annual/Special GB Meeting document (Max Size: 2048KB)</small>
+                        </div>
+                    </div>
+
+                    <div class="col-12 mb-15">
+                        <label class="form-label mb-8 h6">Affidavit</label>
+                        <div class="position-relative">
+                            <input class="form-control py-11" type="file" name="Affidavit"
+                                accept=".pdf,.jpg,.jpeg,.png" required>
+                            <small class="form-text text-muted">Upload Affidavit document (Max Size: 1024KB)</small>
+                        </div>
+                    </div>
+
+                    <div class="col-12 mb-15">
+                        <label class="form-label mb-8 h6">Notice of GB Meeting</label>
+                        <div class="position-relative">
+                            <input class="form-control py-11" type="file" name="GBMeetingNotice"
+                                accept=".pdf,.jpg,.jpeg,.png" required>
+                            <small class="form-text text-muted">Upload Notice of GB Meeting document (Max Size: 400KB)</small>
+                        </div>
+                    </div>
+
+                    <div class="col-12 mb-15">
+                        <label class="form-label mb-8 h6">Details of Serving of Notice</label>
+                        <div class="position-relative">
+                            <input class="form-control py-11" type="file" name="ServingNoticeDetails"
+                                accept=".pdf,.jpg,.jpeg,.png" required>
+                            <small class="form-text text-muted">Upload Details of Serving of Notice document (Max Size: 1024KB)</small>
+                        </div>
+                    </div>
+
+                    <div class="col-12 mb-15">
+                        <label class="form-label mb-8 h6">Challan Payment</label>
+                        <div class="position-relative">
+                            <input class="form-control py-11" type="file" name="ChallanPayment"
+                                accept=".pdf,.jpg,.jpeg,.png" required>
+                            <small class="form-text text-muted">Upload Challan Payment document (Max Size: 400KB)</small>
+                        </div>
+                    </div>
+
+
+
+
+
+
+                </div>
+
+                <div class="flex-align justify-content-end gap-8">
+                    <a href="/" class="btn btn-outline-main rounded-pill py-9">Cancel</a>
+                    <button type="submit" class="btn btn-main rounded-pill py-9">Continue</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Get current date and time
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = (now.getMonth() + 1).toString().padStart(2, '0');
+    const day = now.getDate().toString().padStart(2, '0');
+    const hours = ((now.getHours() + 11) % 12 + 1).toString().padStart(2, '0');
+    const minutes = now.getMinutes().toString().padStart(2, '0');
+    const ampm = now.getHours() >= 12 ? 'PM' : 'AM';
+
+    const defaultDateTime = `${year}-${month}-${day}T${hours}:${minutes}`;
+    document.getElementById('datetime').value = defaultDateTime;
+
+    // Prevent more than 4 documents from being uploaded
+    const fileInput = document.getElementById('documents');
+    const maxFiles = 4;
+
+    fileInput.addEventListener('change', function () {
+        const files = fileInput.files;
+        if (files.length > maxFiles) {
+            alert(`You can only upload a maximum of ${maxFiles} documents.`);
+            fileInput.value = ''; // Clear the input
+        }
+    });
+</script>
+
+<script>
+    document.getElementById("landPhone").addEventListener("input", function () {
+        let phoneInput = this.value.replace(/[^0-9]/g, ''); // Remove non-numeric characters
+        this.value = phoneInput;
+        let errorMsg = document.getElementById("phoneError");
+
+        // Validate: 7 digits and starts with 2, 3, 4, or 5
+        if (/^[0-9]{7}$/.test(phoneInput)) {
+            errorMsg.style.display = "none";
+        } else {
+            errorMsg.style.display = "block";
+        }
+    });
+
+
+    document.getElementById("mobileNumber").addEventListener("input", function () {
+        let mobileInput = this.value.replace(/[^0-9]/g, ''); // Remove non-numeric characters
+        this.value = mobileInput;
+        let errorMsg = document.getElementById("mobileError");
+
+        // Ensure mobile number is exactly 10 digits and starts with 6, 7, 8, or 9
+        if (/^[0-9]{10}$/.test(mobileInput)) {
+            errorMsg.style.display = "none"; // Hide error message
+        } else {
+            errorMsg.style.display = "block"; // Show error message
+        }
+    });
+
+
+    document.getElementById("pinCode").addEventListener("input", function () {
+        let pinInput = this.value.trim();
+        let errorMsg = document.getElementById("pinError");
+
+        // Ensure pin code is exactly 6 digits
+        if (/^\d{6}$/.test(pinInput)) {
+            errorMsg.style.display = "none"; // Hide error message
+        } else {
+            errorMsg.style.display = "block"; // Show error message
+        }
+    });
+    document.getElementById("email").addEventListener("input", function () {
+        let emailInput = this.value.trim();
+        let errorMsg = document.getElementById("emailError");
+
+        // Email validation regex pattern
+        let emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+        // Check if email matches pattern
+        if (emailPattern.test(emailInput)) {
+            errorMsg.style.display = "none"; // Hide error message
+        } else {
+            errorMsg.style.display = "block"; // Show error message
+        }
+    });
+</script>
+<script>
+    document.getElementById("courseCategory").addEventListener("change", function () {
+        if (this.value === "No") {
+            alert("Only own family can apply!");
+            this.value = "Select"; // Reset selection to default
+        }
+    });
+</script>

@@ -1,0 +1,26 @@
+<main id="main" class="main">
+
+    <section>
+        <div class="container my-5">
+            <h4 class="mb-4">Reply on message</h4>
+
+
+
+            <form action="/admin/add-notification" method="post">
+                <input type="hidden" name="by" value="Admin">
+                <label>Select User</label>
+                <select class="form-select" name="userId" aria-label="Default select example">
+                    <option selected>Select User</option>
+                    {{#each users}}
+                    <option value="{{this._id}}">{{this.Fname}} {{this.Lname}}</option>
+                    {{/each}}
+                </select>
+                <label class="mt-3">Message</label>
+                <textarea type="text" name="message" class="form-control"></textarea>
+                <button class="btn btn-dark mt-3" type="submit">Send Message</button>
+            </form>
+
+        </div>
+    </section>
+
+</main>

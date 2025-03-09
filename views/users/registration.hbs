@@ -1,0 +1,256 @@
+<div class="container mt-20 mb-30">
+    <div class="card">
+        <div class="card-header border-bottom border-gray-100 flex-align gap-8">
+            <h5 class="mb-0">Society Registration</h5>
+        </div>
+        <div class="card-body">
+            <form action="/registration" method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="date" id="datetime">
+                <input type="hidden" name="userId" value="{{user._id}}">
+                <input type="hidden" name="status" value="submitted">
+
+                <div class="row mb-14">
+                    <div class="col-6 mb-15">
+                        <label class="form-label mb-8 h6">Type of Society</label>
+                        <div class="position-relative">
+                            <input class="form-control py-11" type="text" name="Stype" placeholder="Enter Society Type"
+                                required>
+                        </div>
+                    </div>
+
+                    <div class="col-6 mb-15">
+                        <label class="form-label mb-8 h6">Category of Society</label>
+                        <div class="position-relative">
+                            <input class="form-control py-11" type="text" name="Scategory"
+                                placeholder="Enter Society Category" required>
+                        </div>
+                    </div>
+
+                    <div class="col-12 mb-15">
+                        <label class="form-label mb-8 h6">Category Description</label>
+                        <div class="position-relative">
+                            <textarea class="form-control py-11" name="Catdesc" placeholder="Enter Description"
+                                required></textarea>
+                        </div>
+                    </div>
+
+                    <div class="col-12 mb-15">
+                        <label class="form-label mb-8 h6">Name of Society</label>
+                        <div class="position-relative">
+                            <input class="form-control py-11" type="text" name="Sname" placeholder="Enter Society Name"
+                                required>
+                        </div>
+                    </div>
+
+                    <div class="col-12 mb-15">
+                        <label class="form-label mb-8 h6">Postal Address</label>
+                        <div class="position-relative">
+                            <textarea class="form-control py-11" name="Paddress" placeholder="Enter Address"
+                                required></textarea>
+                        </div>
+                    </div>
+
+                    <div class="col-6 mb-15">
+                        <label class="form-label mb-8 h6">Post Office</label>
+                        <div class="position-relative">
+                            <input class="form-control py-11" type="text" name="Postoffice"
+                                placeholder="Enter Post Office" required>
+                        </div>
+                    </div>
+
+                    <div class="col-6 mb-15">
+                        <label class="form-label mb-8 h6">Pin Code</label>
+                        <div class="position-relative">
+                            <input id="pinCode" class="form-control py-11" type="number" name="Pincode"
+                                placeholder="Enter Pin Code" required>
+                            <small id="pinError" class="text-danger" style="display: none;">Pin Code must be 6
+                                digits</small>
+                        </div>
+                    </div>
+
+                    <div class="col-6 mb-15">
+                        <label class="form-label mb-8 h6">Land Phone</label>
+                        <div class="position-relative">
+                            <input id="landPhone" class="form-control py-11" type="number" name="Lphone"
+                                placeholder="Enter Land Phone Number" required>
+                            <small id="phoneError" class="text-danger" style="display: none;">Land Phone number must be
+                                7 digits</small>
+                        </div>
+                    </div>
+
+                    <div class="col-6 mb-15">
+                        <label class="form-label mb-8 h6">Area of Operation (More than one district)</label>
+                        <div class="position-relative">
+                            <input class="form-control py-11" type="text" name="AreaOperation"
+                                placeholder="Enter Area of Operation" required>
+                        </div>
+                    </div>
+
+                    <div class="col-6 mb-15">
+                        <label class="form-label mb-8 h6">Name of Chief Promoter</label>
+                        <div class="position-relative">
+                            <input class="form-control py-11" type="text" name="ChiefPromoter"
+                                placeholder="Enter Name of Chief Promoter" required>
+                        </div>
+                    </div>
+
+                    <div class="col-6 mb-15">
+                        <label class="form-label mb-8 h6">Mobile Number</label>
+                        <div class="position-relative">
+                            <input id="mobileNumber" class="form-control py-11" type="number" name="Mobile"
+                                placeholder="Enter Mobile Number" required>
+                            <small id="mobileError" class="text-danger" style="display: none;">Mobile number must be 10
+                                digits</small>
+                        </div>
+                    </div>
+
+                    <div class="col-6 mb-15">
+                        <label class="form-label mb-8 h6">Email</label>
+                        <div class="position-relative">
+                            <input id="email" class="form-control py-11" type="email" name="Email"
+                                placeholder="Enter Email" required>
+                            <small id="emailError" class="text-danger" style="display: none;">Enter a valid email
+                                address</small>
+                        </div> 
+                    </div>
+
+                    <div class="col-sm-6">
+                        <label for="courseCategory" class="h5 mb-8 fw-semibold font-heading">Are Applicants from
+                            different families?</label>
+                        <div class="position-relative">
+                            <select id="courseCategory" name="Applicants"
+                                class="form-select py-9 placeholder-13 text-15">
+                                <option disabled selected>Select</option>
+                                <option value="Yes">Yes</option>
+                                <option value="No">No</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-12 mb-15">
+                        <label class="form-label mb-8 h6">Proposed Bye-laws</label>
+                        <div class="position-relative">
+                            <input class="form-control py-11" type="file" name="ProposedByeLaws"
+                                accept=".pdf,.jpg,.jpeg,.png" required>
+                            <small class="form-text text-muted">Upload Proposed Bye-laws document</small>
+                        </div>
+                    </div>
+
+                    <div class="col-12 mb-15">
+                        <label class="form-label mb-8 h6">Minutes of the Promoting Committee</label>
+                        <div class="position-relative">
+                            <input class="form-control py-11" type="file" name="PromotingCommitteeMinutes"
+                                accept=".pdf,.jpg,.jpeg,.png" required>
+                            <small class="form-text text-muted">Upload Minutes of the Promoting Committee
+                                document</small>
+                        </div>
+                    </div>
+
+                    <div class="col-12 mb-15">
+                        <label class="form-label mb-8 h6">Project Report</label>
+                        <div class="position-relative">
+                            <input class="form-control py-11" type="file" name="ProjectReport"
+                                accept=".pdf,.jpg,.jpeg,.png" required>
+                            <small class="form-text text-muted">Upload Project Report document</small>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="flex-align justify-content-end gap-8">
+                    <a href="/" class="btn btn-outline-main rounded-pill py-9">Cancel</a>
+                    <button type="submit" class="btn btn-main rounded-pill py-9">Continue</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Get current date and time
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = (now.getMonth() + 1).toString().padStart(2, '0');
+    const day = now.getDate().toString().padStart(2, '0');
+    const hours = ((now.getHours() + 11) % 12 + 1).toString().padStart(2, '0');
+    const minutes = now.getMinutes().toString().padStart(2, '0');
+    const ampm = now.getHours() >= 12 ? 'PM' : 'AM';
+
+    const defaultDateTime = `${year}-${month}-${day}T${hours}:${minutes}`;
+    document.getElementById('datetime').value = defaultDateTime;
+
+    // Prevent more than 4 documents from being uploaded
+    const fileInput = document.getElementById('documents');
+    const maxFiles = 4;
+
+    fileInput.addEventListener('change', function () {
+        const files = fileInput.files;
+        if (files.length > maxFiles) {
+            alert(`You can only upload a maximum of ${maxFiles} documents.`);
+            fileInput.value = ''; // Clear the input
+        }
+    });
+</script>
+
+<script>
+    document.getElementById("landPhone").addEventListener("input", function () {
+        let phoneInput = this.value.replace(/[^0-9]/g, ''); // Remove non-numeric characters
+        this.value = phoneInput;
+        let errorMsg = document.getElementById("phoneError");
+
+        // Validate: 7 digits and starts with 2, 3, 4, or 5
+        if (/^[0-9]{7}$/.test(phoneInput)) {
+            errorMsg.style.display = "none";
+        } else {
+            errorMsg.style.display = "block";
+        }
+    });
+
+
+        document.getElementById("mobileNumber").addEventListener("input", function () {
+        let mobileInput = this.value.replace(/[^0-9]/g, ''); // Remove non-numeric characters
+        this.value = mobileInput;
+        let errorMsg = document.getElementById("mobileError");
+
+        // Ensure mobile number is exactly 10 digits and starts with 6, 7, 8, or 9
+        if (/^[0-9]{10}$/.test(mobileInput)) {
+            errorMsg.style.display = "none"; // Hide error message
+        } else {
+            errorMsg.style.display = "block"; // Show error message
+        }
+    });
+
+
+    document.getElementById("pinCode").addEventListener("input", function () {
+        let pinInput = this.value.trim();
+        let errorMsg = document.getElementById("pinError");
+
+        // Ensure pin code is exactly 6 digits
+        if (/^\d{6}$/.test(pinInput)) {
+            errorMsg.style.display = "none"; // Hide error message
+        } else {
+            errorMsg.style.display = "block"; // Show error message
+        }
+    });
+    document.getElementById("email").addEventListener("input", function () {
+        let emailInput = this.value.trim();
+        let errorMsg = document.getElementById("emailError");
+
+        // Email validation regex pattern
+        let emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+        // Check if email matches pattern
+        if (emailPattern.test(emailInput)) {
+            errorMsg.style.display = "none"; // Hide error message
+        } else {
+            errorMsg.style.display = "block"; // Show error message
+        }
+    });
+</script>
+<script>
+    document.getElementById("courseCategory").addEventListener("change", function () {
+        if (this.value === "No") {
+            alert("Only own family can apply!");
+            this.value = "Select"; // Reset selection to default
+        }
+    });
+</script>

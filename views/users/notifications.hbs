@@ -1,0 +1,33 @@
+<br><br>
+<style>
+    html,
+    body {
+        background-color: white;
+    }
+</style>
+<div class="card p-5">
+    <div class="row g-5">
+
+        <div class="col-lg-3">
+            <div class="feedback-section ">
+                <a href="/" class="btn mb-3 btn-dark btn-sm">back</a>
+                <h5>All Notifications</h5>
+                <hr>
+                {{#each notifications}}
+                <div class="card p-3 shadow mb-2">
+                    <p>{{formatDate this.createdAt}}</p>
+                    <p>
+                        <strong class="">By {{this.by}}<br></strong>
+                    </p>
+                    <p>{{this.message}}</p>
+                </div>
+                {{else}}
+                <p>No notifications available!</p>
+                {{/each}}
+            </div>
+        </div>
+    </div>
+
+
+
+</div>

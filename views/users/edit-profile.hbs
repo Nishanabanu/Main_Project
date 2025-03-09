@@ -1,0 +1,107 @@
+<style>
+    label {
+        font-size: 13px;
+        margin-bottom: 10px;
+    }
+</style>
+
+<!-- Login Wrapper Area -->
+<div class="login-wrapper d-flex  align-items-center justify-content-center mt-3">
+    <div class="container-lg">
+        <div class="text-center px-4"><img class="login-intro-img" src="assets/img/bg-img/36.png" alt=""></div><br>
+        <!-- Register Form -->
+
+        <div class="">
+            <a href="/profile" class="btn btn-sm btn-dark">
+                <i class="bi bi-arrow-left-short "></i> Back</a>
+        </div>
+
+        <div class="card shadow p-4 mt-3">
+            <div class="register-form mt-4">
+                <h4 class="mb-5 text-left">Edit Your Profile</h4>
+                <form action="/edit-profile/{{userProfile._id}}" method="POST" enctype="multipart/form-data">
+                    <div class="row g-1">
+                        <div class="col-lg-6">
+                            <div class="form-group">
+                                <label>First Name</label>
+                                <input class="form-control" type="text" id="Fname" name="Fname"
+                                    value="{{userProfile.Fname}}" pattern="[A-Za-z]+" title="Only letters are allowed"
+                                    required>
+                                {{#if errors.fname}}
+                                <small class="text-danger">{{errors.fname}}</small>
+                                {{/if}}
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="form-group">
+                                <label>Last Name</label>
+                                <input class="form-control" type="text" id="Lname" name="Lname"
+                                    value="{{userProfile.Lname}}" pattern="[A-Za-z]+" title="Only letters are allowed"
+                                    required>
+                                {{#if errors.lname}}
+                                <small class="text-danger">{{errors.lname}}</small>
+                                {{/if}}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input class="form-control" type="email" id="Email" name="Email" value="{{userProfile.Email}}"
+                            required>
+                        {{#if errors.email}}
+                        <small class="text-danger">{{errors.email}}</small>
+                        {{/if}}
+                    </div>
+
+                    <div class="form-group">
+                        <label>Phone Number</label>
+                        <input class="form-control" type="number" id="Phone" name="Phone" value="{{userProfile.Phone}}"
+                            required>
+                        {{#if errors.phone}}
+                        <small class="text-danger">{{errors.phone}}</small>
+                        {{/if}}
+                    </div>
+
+                    <div class="form-group">
+                        <label>Address</label>
+                        <textarea class="form-control" id="Address" name="Address"
+                            required>{{userProfile.Address}}</textarea>
+                        {{#if errors.address}}
+                        <small class="text-danger">{{errors.address}}</small>
+                        {{/if}}
+                    </div>
+
+                    <div class="row g-1">
+                        <div class="col-lg-7">
+                            <div class="form-group">
+                                <label>City</label>
+                                <input class="form-control" type="text" id="District" name="District"
+                                    value="{{userProfile.District}}" pattern="[A-Za-z]+"
+                                    title="Only letters are allowed" required>
+                                {{#if errors.district}}
+                                <small class="text-danger">{{errors.district}}</small>
+                                {{/if}}
+                            </div>
+                        </div>
+                        <div class="col-lg-5">
+                            <div class="form-group">
+                                <label>Pincode</label>
+                                <input class="form-control" type="number" id="Pincode" name="Pincode"
+                                    value="{{userProfile.Pincode}}" required>
+                                {{#if errors.pincode}}
+                                <small class="text-danger">{{errors.pincode}}</small>
+                                {{/if}}
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn mt-4 btn-primary">Update Profile</button>
+                    <a href="/profile" class="btn mt-4 btn-secondary">Cancel</a>
+                </form>
+            </div>
+        </div>
+
+
+    </div>
+</div>

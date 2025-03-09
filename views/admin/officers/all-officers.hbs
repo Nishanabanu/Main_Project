@@ -1,0 +1,81 @@
+<main id="main" class="main">
+
+    <div class="pagetitle">
+        <h1>Manage Officers</h1>
+        <nav>
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/admin">Dashboard</a></li>
+                <li class="breadcrumb-item">Officers</li>
+                <li class="breadcrumb-item active">All-Officers</li>
+            </ol>
+        </nav>
+    </div><!-- End Page Title -->
+
+    <section class="section">
+        <div class="row">
+            <div class="col-lg-12">
+
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="card-title">All Officers</h5>
+                            <a href="/admin/officers/add-officer" class="btn btn-dark">+ Add New Officer</a>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table datatable">
+                                <thead>
+                                    <tr>
+                                        <th>No.</th>
+                                        <th>Officer Name</th>
+                                        <th>Dept</th>
+                                        <th>Email</th>
+                                        <th>Phone</th>
+                                        <th>Address</th>
+                                        <th>Credentials</th>
+                                        <th>Manage</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {{#each officers}}
+                                    <tr>
+                                        <td>{{incremented @index}}</td>
+                                        <td>{{this.officername}}</td>
+                                        <td>{{this.type}}</td>
+                                        <td>{{this.email}}</td>
+                                        <td>{{this.phone}}</td>
+                                        <td>{{this.address}}</td>
+                                        <td>
+                                            <p>Username : {{this.username}}</p>
+                                            <p>Password : {{this.password}}</p>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex gap-2">
+                                                <a href="/admin/officers/edit-officer/{{this._id}}"
+                                                    class="btn btn-dark btn-sm"><i class="bi bi-pen"></i>
+                                                </a>
+
+                                                <form action="/admin/officers/delete-officer/{{this._id}}"
+                                                    method="POST">
+                                                    <button type="submit"
+                                                        onclick="return confirm('Are You Sure to Delete This Officer ?')"
+                                                        class="btn btn-danger btn-sm"><i
+                                                            class="bi bi-trash"></i></button>
+                                                </form>
+                                            </div>
+                                        </td>
+
+                                    </tr>
+                                    {{/each}}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+
+            </div>
+        </div>
+    </section>
+
+</main><!-- End #main -->

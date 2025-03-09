@@ -1,0 +1,146 @@
+<style>
+    .custum-file-upload {
+        height: 200px;
+        width: 300px;
+        display: flex;
+        flex-direction: column;
+        align-items: space-between;
+        gap: 20px;
+        cursor: pointer;
+        align-items: center;
+        justify-content: center;
+        border: 2px dashed #cacaca;
+        background-color: rgba(255, 255, 255, 1);
+        padding: 1.5rem;
+        border-radius: 10px;
+        box-shadow: 0px 48px 35px -48px rgba(0, 0, 0, 0.1);
+    }
+
+    .custum-file-upload .icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .custum-file-upload .icon svg {
+        height: 80px;
+        fill: rgba(75, 85, 99, 1);
+    }
+
+    .custum-file-upload .text {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .custum-file-upload .text span {
+        font-weight: 400;
+        color: rgba(75, 85, 99, 1);
+    }
+
+    .custum-file-upload input {
+        display: none;
+    }
+</style>
+
+<main id="main" class="main">
+
+    <div class="pagetitle">
+        <h1>Add Officer</h1>
+        <nav>
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/admin">Home</a></li>
+                <li class="breadcrumb-item">officer</li>
+                <li class="breadcrumb-item active">Add officer</li>
+            </ol>
+        </nav>
+    </div><!-- End Page Title -->
+    <section class="section">
+        <div class="row">
+            <div class="col-lg-7">
+                <div class="card">
+                    <div class="card-body">
+                        {{!-- <h5 class="card-title">Multi Columns Form</h5> --}}
+
+                        <!-- Multi Columns Form -->
+                        <form class="row g-3 mt-3" action="/admin/edit-officer/{{officer._id}}" method="POST">
+                            <div class="col-md-12">
+                                <label for="inputName5" class="form-label">Officer Name</label>
+                                <input type="text" class="form-control" name="officername" id="inputName5"
+                                    value="{{officer.officername}}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="inputEmail5" class="form-label">Email</label>
+                                <input type="email" class="form-control" name="email" id="inputEmail5"
+                                    value="{{officer.email}}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="inputPassword5" class="form-label">Phone Number</label>
+                                <input type="number" name="phone" class="form-control" id="inputPassword5"
+                                    value="{{officer.phone}}" required>
+                            </div>
+                            <div class="col-md-12">
+                                <label for="inputState" class="form-label">Select Department</label>
+                                <select id="inputState" name="type" class="form-select">
+                                    <option selected value="{{officer.type}}" disabled>{{officer.type}}</option>
+                                    <option value="Assistant Registrar">Assistant Registrar</option>
+                                    <option value="Deputy Registrar">Deputy Registrar
+                                    </option>
+                                    <option value="Joint Registrar">Joint Registrar</option>
+                                    <option value="Other">Other</option>
+
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label for="inputAddress5" class="form-label">Address</label>
+                                <textarea type="text" class="form-control" name="address" id="inputAddres5s"
+                                    placeholder="1234 Main St">{{officer.address}}</textarea>
+
+                            </div>
+
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="col-lg-5">
+                <div class="card">
+                    <div class="card-body">
+                        {{!-- <h5 class="card-title">Multi Columns Form</h5> --}}
+
+                        <!-- Multi Columns Form -->
+                        <div class="col-md-12 mt-4">
+                            <label for="inputName5" class="form-label">username</label>
+                            <input type="text" class="form-control" name="username" id="inputName5"
+                                value="{{officer.username}}" required>
+                        </div>
+                        <div class="col-md-12 mt-2">
+                            <label for="inputPassword5" class="form-label">Password</label>
+                            <input type="password" class="form-control" name="password" id="inputPassword5"
+                                value="{{officer.password}}" required>
+                        </div>
+
+
+
+
+
+
+                    </div>
+                </div>
+
+            </div>
+
+
+        </div>
+
+    </section>
+    <div class="mb-4" style="float: inline-end;
+">
+        <button type="submit" class="btn btn-primary">Submit</button>
+        <button type="reset" class="btn btn-secondary">Reset</button>
+        <a href="/admin/officers/all-officers" class="btn btn-dark">Cancel</a>
+
+    </div>
+
+
+</main><!-- End #main -->

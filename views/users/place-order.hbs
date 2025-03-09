@@ -1,0 +1,205 @@
+<div class="page-content-wrapper py-3"><br>
+    <div class="container-lg">
+        <!-- Checkout Wrapper -->
+        <div class="checkout-wrapper-area">
+            <form id="checkout-form">
+                <div class="row g-2">
+                    <div class="col-lg-6">
+                        <div class="card">
+                            <div class="card-body">
+
+                                <h6 class="mb-3">Enter your billing details</h6>
+                                <input type="text" name="userId" value="{{user._id}}" hidden>
+                                <input type="hidden" name="workspaceId" value="{{workspace._id}}">
+
+                                <div class="form-group">
+                                    <input class="form-control mb-3" type="text" name="Fname"
+                                        value={{user.Fname}}{{user.Lname}} placeholder="Your full name">
+                                </div>
+                                <div class="form-group">
+                                    <input class="form-control mb-3" type="number" name="Phone" value={{user.Phone}}
+                                        placeholder="Your Number">
+                                </div>
+                                <div class="form-group">
+                                    <input class="form-control mb-3" type="email" name="Email" value={{user.Email}}
+                                        placeholder="Your email">
+                                </div>
+
+                                <div class="form-group">
+                                    <input class="form-control mb-3" type="text" name="Pincode" value={{user.Pincode}}
+                                        placeholder="Postcode or ZIP">
+                                </div>
+                                <div class="form-group">
+                                    <input class="form-control mb-3" type="text" name="District" value={{user.District}}
+                                        placeholder="Street address">
+                                </div>
+
+                                {{!-- <div class="form-group">
+                                    <input class="form-control mb-3" type="text" name="City" value={{user.City}}
+                                        placeholder="City">
+                                </div> --}}
+                                <div class="form-group">
+                                    <textarea class="form-control mb-3" id="notes" name="Address" cols="30" rows="10"
+                                        placeholder="Address">{{user.Address}}</textarea>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="card mb-2 p-4">
+                            <h6>Workspace Details</h6>
+                            <hr>
+                            <h6>
+                                <div class="mb-2"><b>Workspace Name :</b> {{workspace.wname}}<br></div>
+                                <div class="mb-2"><b>Price :</b> {{workspace.Price}}/-<br></div>
+                                <div class="mb-2"><b>Provided By :</b> {{workspace.bname}}<br></div>
+                                <hr>
+                                <div class="mb-2"><b>Total Price :</b> <span
+                                        class="text-danger">{{workspace.Price}}</span> /-<br></div>
+
+                            </h6>
+                        </div>
+                        <div class="card p-4">
+                            <label>Select a date</label>
+                            <input type="date" class="form-control" name="selecteddate" id="dateInput" required />
+
+                            {{#if error}}
+                            <div style="color: red;">
+                                <strong>{{error}}</strong>
+                            </div>
+                            {{/if}}
+                            <hr>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="radio" name="payment-method" value="COD" checked>
+                                <label class="form-check-label" for="darkRadio1">Booking (without payment)</label>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="radio" name="payment-method" value="ONLINE">
+                                <label class="form-check-label" for="darkRadio2">Pay & Book</label>
+                            </div>
+
+                            <button class="btn btn-dark mt-3 w-100" type="submit">Book Now</button>
+            </form>
+        </div>
+    </div>
+</div>
+</form>
+</div>
+</div>
+</div>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+<script>
+    // Your script that uses jQuery
+    $("#checkout-form").submit((e) => {
+        console.log($("#checkout-form")); // Check if this returns a valid jQuery object
+        e.preventDefault();
+        $.ajax({
+            url: '/place-order',
+            method: 'post',
+            data: $("#checkout-form").serialize(),
+            success: (response) => {
+                if (response.codSuccess) {
+                    location.href = '/order-placed';
+                } else {
+                    razorpayPayment(response);
+                }
+            },
+            error: (xhr, status, error) => {
+                console.error("Error placing order:", xhr.responseText);
+                alert("An error occurred while placing the order. Please try again.");
+            }
+        });
+    });
+
+</script>
+<script>
+    function razorpayPayment(order) {
+        var options = {
+            "key": "rzp_test_8NokNgt8cA3Hdv", // Enter the Key ID generated from the Dashboard
+            "amount": order.amount, // Amount is in currency subunits. Default currency is INR. Hence, 50000 refers to 50000 paise
+            "currency": "INR",
+            "name": "CoSpace",
+            "description": "Test Transaction",
+            "image": "https://example.com/your_logo",
+            "order_id": order.id, //This is a sample Order ID. Pass the `id` obtained in the response of Step 1
+            "handler": function (response) {
+                verifyPayment(response, order)
+            },
+            "prefill": {
+                "name": "Shahala nushri",
+                "email": "shahalanushri9@gmail.com",
+                "contact": "8156867466"
+            },
+            "notes": {
+                "address": "Razorpay Corporate Office"
+            },
+            "theme": {
+                "color": "#3399cc"
+            }
+        }
+        var rzp1 = new Razorpay(options);
+        rzp1.open()
+    }
+
+    function verifyPayment(payment, order) {
+        $.ajax({
+            url: '/verify-payment',
+            data: {
+                payment,
+                order
+            },
+            method: 'post',
+            success: (response) => {
+                if (response.status) {
+                    location.href = '/order-placed'
+                } else {
+                    alert("Payment failed")
+                }
+            }
+        })
+    }
+</script>
+
+<script>
+    const dateInput = document.getElementById('dateInput');
+
+    // Get today's date
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0'); // Months are zero-based
+    const dd = String(today.getDate()).padStart(2, '0');
+
+    // Set the minimum date to today
+    dateInput.setAttribute('min', `${yyyy}-${mm}-${dd}`);
+
+    // Function to disable weekends
+    dateInput.addEventListener('input', async function () {
+        const selectedDate = new Date(this.value);
+        const day = selectedDate.getUTCDay();
+
+        // Check if the selected date is Saturday (6) or Sunday (0)
+        if (day === 6 || day === 0) {
+            alert("Please select a weekday (Monday to Friday).");
+            this.value = ""; // Clear the input
+        } else {
+            // Check if the date is already booked
+            const response = await fetch(`/check-date-booking`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ selecteddate: this.value }) // Send the selected date
+            });
+
+            const data = await response.json();
+            if (data.booked) {
+                alert("This date is already booked.");
+                this.value = ""; // Clear the input
+            }
+        }
+    });
+</script>
