@@ -38,6 +38,29 @@ app.engine(
       eq: function (a, b) {
         return a === b;
       },
+      ne: function (v1, v2) {
+        return v1 !== v2;
+      },
+      inc:function(value){
+        return value+1;
+      },
+      extractYouTubeID: function (url) {
+        if (url) {
+          const regex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+          const match = url.match(regex);
+          return match ? match[1] : '';
+        }
+      },
+      truncate: function (str) {
+        if (str && str.length > 10) {
+          return str.substring(0, 10) + '...';
+        }
+        return str;
+      }
+      ,
+      and: function (a, b) {
+        return a && b;
+      },
       formatDate: function (dateString) {
         const date = new Date(dateString);
         const day = String(date.getDate()).padStart(2, '0');

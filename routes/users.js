@@ -5,7 +5,13 @@ var builderHelper = require("../helper/builderHelper");
 var router = express.Router();
 var db = require("../config/connection");
 var collections = require("../config/collections");
+const adminHelper = require("../helper/adminHelper");
 const ObjectId = require("mongodb").ObjectID;
+const path = require('path');
+const htmlPdf = require('html-pdf-node');
+var fs = require("fs");
+const axios = require('axios');
+const officerHelper = require("../helper/officerHelper");
 
 const verifySignedIn = (req, res, next) => {
   if (req.session.signedIn) {
@@ -30,12 +36,15 @@ router.get("/home", async function (req, res, next) {
   userHelper.getAllworkspaces().then(async (workspaces) => {
 
     // Getting Users Registrations and Its count of each status
-    const registrations = await userHelper.getAllregistrations(user._id);
+    const societyRegistration = await userHelper.getAllregistrations(user._id);
 
-    const totalApplication = registrations.length;
-    const approvedApplication = registrations.filter(reg => reg.status === 'completed').length;
-    const rejectedApplication = registrations.filter(reg => reg.status === 'rejected').length;
-    const processingApplications = registrations.filter(reg => ['assistant-registrar-review', 'deputy-registrar-review', 'joint-registrar-review'].includes(reg.status)).length;
+    const bylawRegistrations = await userHelper.getAllbylawregistrations(user._id);
+    const allRegistrations = [...societyRegistration || [], ...bylawRegistrations || []];
+
+    const totalApplication = allRegistrations.length;
+    const approvedApplication = allRegistrations.filter(reg => reg.status === 'completed').length;
+    const rejectedApplication = allRegistrations.filter(reg => reg.status === 'rejected').length;
+    const processingApplications = allRegistrations.filter(reg => ['assistant-registrar-review', 'payment', 'deputy-registrar-review', 'joint-registrar-review'].includes(reg.status)).length;
 
     res.render("users/home", {
       admin: false,
@@ -48,6 +57,8 @@ router.get("/home", async function (req, res, next) {
     });
   });
 });
+
+
 
 
 // router.get("/index", async function (req, res, next) {
@@ -932,6 +943,296 @@ router.get("/bylawpayment/:id", verifySignedIn, async function (req, res) {
   } catch (error) {
     console.error("Error fetching registration:", error);
     res.status(500).send("Something went wrong. Please try again.");
+  }
+});
+
+router.get("/audit", verifySignedIn, async function (req, res) {
+  let user = req.session.user;
+
+  try {
+    const audits = await userHelper.getAuditsByUserId(user._id);
+    res.render("users/user-audit", {
+      admin: false,
+      layout: "layout", user, audits
+    });
+  } catch (error) {
+    console.error("Error fetching audits:", error);
+    res.status(500).send("Something went wrong. Please try again.");
+  }
+});
+
+router.post('/submit-audit-documents/:auditId', verifySignedIn, async (req, res) => {
+  const auditId = req.params.auditId;
+  let { documents } = req.body;
+  try {
+    console.log(req.files)
+    const annualAuditReport = req.files ? req.files.annualAuditReport : null;
+    const minutesOfAGM = req.files ? req.files.minutesOfAGM : null;
+    const updatedMemberList = req.files ? req.files.updatedMemberList : null;
+    const incomeExpenditureStatement = req.files ? req.files.incomeExpenditureStatement : null;
+
+    const documentFiles = [
+      { file: annualAuditReport, name: "annualAuditReport" },
+      { file: minutesOfAGM, name: "minutesOfAGM" },
+      { file: updatedMemberList, name: "updatedMemberList" },
+      { file: incomeExpenditureStatement, name: "incomeExpenditureStatement" }
+    ];
+
+    const documentPaths = [];
+
+    documentFiles.forEach(({ file, name }, index) => {
+      if (file) {
+        const uniqueFileName = `${Date.now()}-${index}-${file.name.replace(/\s+/g, '')}`;
+        const filePath = `/audit-documents/${uniqueFileName}`;
+
+        file.mv(`./public${filePath}`, (err) => {
+          if (err) {
+            console.error(`File upload error (${name}):`, err);
+          }
+        });
+
+        documentPaths.push({ [name]: filePath });
+      }
+    });
+
+    documents = documentPaths;
+    await userHelper.submitAuditDocuments(auditId, documents);
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error submitting audit documents:', error);
+    res.json({ success: false, error: 'Failed to submit audit documents' });
+  }
+});
+
+
+
+
+// View training materials
+router.get('/training', async (req, res) => {
+  try {
+    let user = req.session.user;
+
+    const trainingMaterials = await adminHelper.getAllMaterials();
+    const completedMaterials = await userHelper.getAllCompletedMeterials(req.session.user._id);
+
+    // Map through training materials and set the status if completed
+    const materialsWithStatus = trainingMaterials.map(material => {
+      const isCompleted = completedMaterials.some(completed => completed._id.toString() === material._id.toString());
+      return {
+        ...material,
+        status: isCompleted ? 'completed' : 'pending'
+      };
+    });
+
+    res.render('users/training-materials', {
+      admin: false,
+      layout: "layout",trainingMaterials: materialsWithStatus,user
+    });
+  } catch (error) {
+    console.error('Error fetching training materials:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+// Complete training material
+router.post('/training/complete/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.session.user._id;
+    await userHelper.completeTrainingMaterial(userId, id);
+    res.redirect('/training');
+  } catch (error) {
+    console.error('Error completing training material:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+// Generate certificate
+router.get('/training/certificate/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = req.session.user;
+    const material = await adminHelper.getMaterialDetails(id);
+
+    // Enhanced certificate HTML with improved styling
+    const fullHtml = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+      <meta charset="UTF-8">
+      <title>Certificate of Completion</title>
+      <style>
+        body {
+        font-family: 'Times New Roman', Times, serif;
+        text-align: center;
+        padding: 50px;
+        background: #f9f9f9;
+        }
+        .certificate {
+        width: 80%;
+        margin: 0 auto;
+        padding: 40px;
+        border: 15px solid #2c3e50;
+        background: #fff;
+        box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.2);
+        position: relative;
+        }
+        .certificate::before, .certificate::after {
+        content: '';
+        position: absolute;
+        border: 2px solid #2c3e50;
+        top: 10px;
+        bottom: 10px;
+        left: 10px;
+        right: 10px;
+        }
+        .certificate h1 {
+        font-size: 50px;
+        color: #2c3e50;
+        margin-bottom: 20px;
+        }
+        .certificate p {
+        font-size: 20px;
+        margin: 10px 0;
+        }
+        .certificate h2 {
+        font-size: 35px;
+        color: #34495e;
+        margin: 20px 0;
+        }
+        .certificate h3 {
+        font-size: 30px;
+        color: #16a085;
+        }
+        .signature {
+        margin-top: 50px;
+        display: flex;
+        justify-content: space-between;
+        padding: 0 50px;
+        }
+        .signature div {
+        border-top: 2px solid #000;
+        width: 40%;
+        text-align: center;
+        font-size: 18px;
+        padding-top: 5px;
+        }
+      </style>
+      </head>
+      <body>
+      <div class="certificate">
+        <h1>Certificate of Completion</h1>
+        <p>This is to certify that</p>
+        <h2>${user.Fname} ${user.Lname}</h2>
+        <p>has successfully completed the training material</p>
+        <h3>${material.title}</h3>
+        <p>on ${new Date().toLocaleDateString()}</p>
+   
+      </div>
+      
+      </body>
+    </html>
+    `;
+
+    const options = {
+      format: 'A4',
+      margin: {
+        top: '20mm',
+        right: '20mm',
+        bottom: '20mm',
+        left: '20mm'
+      },
+      printBackground: true,
+      preferCSSPageSize: true
+    };
+
+    const dir = path.join(__dirname, '../public/certificates');
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+
+    const pdfPath = path.join(dir, `${user._id}-${material.title}.pdf`);
+    const file = { content: fullHtml };
+    const pdfBuffer = await htmlPdf.generatePdf(file, options);
+    fs.writeFileSync(pdfPath, pdfBuffer);
+
+    res.download(pdfPath);
+  } catch (error) {
+    console.error('Error generating certificate:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+// AI Chatbot page
+router.get('/chatbot', verifySignedIn, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const chatMessages = await userHelper.getChatMessages(userId);
+    res.render('users/chat-with-ai', {
+      admin: false,
+      layout: "layout", user: req.session.user, chatMessages
+    });
+  } catch (error) {
+    console.error('Error fetching chat messages:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+// Query AI Chatbot
+router.post('/chat-with-ai/query', verifySignedIn, async (req, res) => {
+  try {
+    const { query } = req.body;
+    const userId = req.session.user._id;
+    const settings = await adminHelper.getAIChatbotSettings();
+    const response = await axios.post(
+      'https://api.together.xyz/v1/completions',
+      {
+        model: 'mistralai/Mistral-7B-Instruct-v0.1',
+        prompt: `${settings.prompt}\nUser: ${query}\nAI:`,
+        max_tokens: 200,
+      },
+      {
+        headers: { Authorization: `Bearer f4a911ae033eb1b34093cc4d80e28881270d57f6626d605a0a1727fc169f95e9` },
+      }
+    );
+
+    const aiResponse = response.data.choices[0].text;
+
+    // Save user query and AI response to the database
+    await userHelper.saveChatMessage(userId, query, 'user');
+    await userHelper.saveChatMessage(userId, aiResponse, 'ai');
+
+    res.json({ response: aiResponse });
+  } catch (error) {
+    console.error('Error querying AI:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+// Register a complaint
+router.post('/complaints/register', verifySignedIn, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const { text } = req.body;
+
+    await officerHelper.registerComplaint(userId, text);
+    res.redirect('/complaints');
+  } catch (error) {
+    console.error('Error registering complaint:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+// View user complaints
+router.get('/complaints', verifySignedIn, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const complaints = await officerHelper.getUserComplaints(userId);
+
+    res.render('users/complaints', { admin: false, layout: 'layout', user: req.session.user, complaints });
+  } catch (error) {
+    console.error('Error fetching complaints:', error);
+    res.status(500).send('Internal Server Error');
   }
 });
 

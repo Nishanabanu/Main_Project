@@ -1,0 +1,210 @@
+<div class="container mt-20 mb-30">
+  <div class="card shadow-sm p-3">
+    <div class="card-body p-6">
+      <h4 class="text-primary">
+        <i class="bi bi-clock-history text-primary me-2"></i>
+        Audit Notifications
+      </h4>
+
+      <!-- Audit Table -->
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Review</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each audits}}
+          <tr>
+            <td>{{this.date}}</td>
+            <td>{{this.description}}</td>
+        <td>
+              {{#if (eq this.status "completed")}}
+              Completed
+              {{else if (eq this.status "deputy-registrar-review")}}
+              Deputy Registrar Review
+              {{else if (eq this.status "assistant-registrar-review")}}
+              Assistant Registrar Review
+              {{else if (eq this.status "submitted")}}
+              Submitted
+              {{else if (eq this.status "pending")}}
+              Pending
+              {{else if (eq this.status "approved")}}
+              Approved
+              {{else}}
+              {{this.status}}
+              {{/if}}
+            </td>            <td>
+              {{#if (eq this.status 'pending')}}
+              <button class="btn btn-primary" data-bs-toggle="modal"
+                data-bs-target="#submitDocumentsModal-{{this._id}}">
+                Submit Documents
+              </button>
+              {{else}}
+              <button class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#viewAuditModal-{{this._id}}">
+                View
+              </button>
+              {{/if}}
+            </td>
+          </tr>
+          {{/each}}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Submit Documents Modal -->
+{{#each audits}}
+<div class="modal fade" id="submitDocumentsModal-{{this._id}}" tabindex="-1"
+  aria-labelledby="submitDocumentsModalLabel-{{this._id}}" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="submitDocumentsModalLabel-{{this._id}}">Submit Documents</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form action="/submit-audit-documents/{{this._id}}" method="POST" id="submitDocumentsForm-{{this._id}}" enctype="multipart/form-data">
+          <div class="mb-3">
+            <label for="annualAuditReport-{{this._id}}" class="form-label">Annual Audit Report</label>
+            <input type="file" id="annualAuditReport-{{this._id}}" name="annualAuditReport" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label for="minutesOfAGM-{{this._id}}" class="form-label">Minutes of Annual General Meeting</label>
+            <input type="file" id="minutesOfAGM-{{this._id}}" name="minutesOfAGM" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label for="updatedMemberList-{{this._id}}" class="form-label">Updated Member List</label>
+            <input type="file" id="updatedMemberList-{{this._id}}" name="updatedMemberList" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label for="incomeExpenditureStatement-{{this._id}}" class="form-label">Income and Expenditure Statement</label>
+            <input type="file" id="incomeExpenditureStatement-{{this._id}}" name="incomeExpenditureStatement" class="form-control" required>
+          </div>
+          <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{{/each}}
+
+<!-- View Audit Modal -->
+{{#each audits}}
+<div class="modal fade" id="viewAuditModal-{{this._id}}" tabindex="-1"
+  aria-labelledby="viewAuditModalLabel-{{this._id}}" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="viewAuditModalLabel-{{this._id}}">View Audit</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <table class="table table-bordered">
+          <tbody>
+            <tr>
+              <th>Date</th>
+              <td>{{this.date}}</td>
+            </tr>
+            <tr>
+              <th>Review</th>
+              <td>{{this.description}}</td>
+            </tr>
+            <tr>
+              <th>Status</th>
+        <td>
+              {{#if (eq this.status "completed")}}
+              Completed
+              {{else if (eq this.status "deputy-registrar-review")}}
+              Deputy Registrar Review
+              {{else if (eq this.status "assistant-registrar-review")}}
+              Assistant Registrar Review
+              {{else if (eq this.status "submitted")}}
+              Submitted
+              {{else if (eq this.status "pending")}}
+              Pending
+              {{else if (eq this.status "approved")}}
+              Approved
+              {{else}}
+              {{this.status}}
+              {{/if}}
+            </td>            </tr>
+            <tr>
+              <th>Documents</th>
+              <td>
+                <ul class="list-group">
+                  {{#each this.documents}}
+                    {{#each this}}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                      <a href="{{this}}" target="_blank" class="text-primary">{{@key}}</a>
+                      <div>
+                        <button class="btn btn-sm btn-secondary view-pdf" data-url="{{this}}">View</button>
+                      </div>
+                    </li>
+                    {{/each}}
+                  {{/each}}
+                </ul>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{{/each}}
+
+<!-- PDF Viewer Modal -->
+<div class="modal fade" id="pdfModal" tabindex="-1" aria-labelledby="pdfModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="pdfModalLabel">Doc Viewer</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <iframe id="pdfViewer" src="" width="100%" height="600px" style="border: none;"></iframe>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.querySelectorAll('[id^="submitDocumentsForm-"]').forEach(form => {
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      const auditId = this.id.split('-')[1];
+      const formData = new FormData(this);
+
+      fetch(`/submit-audit-documents/${auditId}`, {
+        method: 'POST',
+        body: formData
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            location.reload();
+          } else {
+            alert('Failed to submit documents');
+          }
+        })
+        .catch(error => {
+          console.error('Error submitting documents:', error);
+          alert('Error: Unable to submit documents');
+        });
+    });
+  });
+
+  document.querySelectorAll('.view-pdf').forEach(button => {
+    button.addEventListener('click', function () {
+      const pdfUrl = this.getAttribute('data-url');
+      document.getElementById('pdfViewer').src = pdfUrl;
+      new bootstrap.Modal(document.getElementById('pdfModal')).show();
+    });
+  });
+
+</script>

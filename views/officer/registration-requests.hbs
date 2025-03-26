@@ -1,0 +1,513 @@
+<main id="main" class="main p-30">
+    <div class="pagetitle">
+        <h4>Hey {{officer.officername}}, <br> Welcome to {{officer.type}} Portal</h4>
+        <nav>
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/officer">Home</a></li>
+                <li class="breadcrumb-item active">{{officer.type}} Portal</li>
+            </ol>
+        </nav>
+    </div><!-- End Page Title -->
+
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Registrations</h5>
+            <div class="filter-section">
+                <select id="registrationFilter" class="form-select" style="width: auto;">
+                    <option selected="selected" value="pending">Pending Approval</option>
+                    <option value="all">All Registrations</option>
+                </select>
+            </div>
+        </div>
+        <div class="card-body">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="registrationTableBody">
+                    {{#each registrations}}
+                    <tr>
+                        <td>{{this.userData.Fname}} {{this.userData.Lname}}</td>
+                        <td>{{this.date}}</td>
+                        <td>{{statusMap.[this.status]}}</td>
+                        <td>
+                            <button class="btn btn-info view-btn" data-id="{{this._id}}">View</button>
+                        </td>
+                    </tr>
+                    {{/each}}
+                </tbody>
+            </table>
+            <div id="noDataMessage" class="text-center" style="display: none;">
+                <p>No registrations available.</p>
+            </div>
+        </div>
+    </div>
+</main><!-- End #main -->
+
+<!-- Confirmation Modal -->
+<div class="modal fade" id="confirmationModal" tabindex="-1" aria-labelledby="confirmationModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmationModalLabel">Confirm Action</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to <span id="actionType"></span> this registration?
+                <div id="rejectReasonContainer" class="mt-3" style="display: none;">
+                    <label for="rejectReason" class="form-label">Reason for Rejection:</label>
+                    <textarea id="rejectReason" class="form-control" rows="3"></textarea>
+                </div>
+                <div id="signatureContainer" class="mt-3" style="display: none;">
+                    <label class="form-label">Choose how to provide your signature:</label>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="signatureOption" id="drawSignatureOption"
+                            value="draw" checked>
+                        <label class="form-check-label" for="drawSignatureOption">Draw Signature</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="signatureOption" id="uploadSignatureOption"
+                            value="upload">
+                        <label class="form-check-label" for="uploadSignatureOption">Upload Signature</label>
+                    </div>
+                    <div id="drawSignatureContainer" class="mt-3">
+                        <label for="signatureCanvas" class="form-label">Draw your signature:</label>
+                        <canvas id="signatureCanvas" class="border" width="400" height="200"></canvas>
+                        <button type="button" class="btn btn-secondary mt-2" id="clearSignatureBtn">Clear</button>
+                    </div>
+                    <div id="uploadSignatureContainer" class="mt-3" style="display: none;">
+                        <label for="signatureUpload" class="form-label">Upload your signature (PNG, 400x200, white
+                            background):</label>
+                        <input type="file" id="signatureUpload" class="form-control" accept="image/png">
+                        <img id="uploadedSignature" class="mt-2"
+                            style="display: none; max-width: 100%; border: 1px solid #ccc;">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="previewActionBtn">
+                    {{#if (eq officer.type "Joint Registrar")}}Preview{{else}}Confirm{{/if}}
+                </button>
+                {{!-- <button type="button" class="btn btn-primary" id="confirmActionBtn">Confirm</button> --}}
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Preview Modal -->
+<div class="modal fade" id="previewModal" tabindex="-1" aria-labelledby="previewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="previewModalLabel">Final Report Preview</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="previewContent">
+                <!-- Preview content will be dynamically generated here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="confirmActionBtn">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loader Modal -->
+<div class="modal fade" id="loaderModal" tabindex="-1" aria-labelledby="loaderModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body text-center">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-3">Generating the report, please wait...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<a href="#" class="back-to-top d-flex align-items-center justify-content-center">
+    <i class="bi bi-arrow-up-short"></i>
+</a>
+
+<script>
+    window.registrations = {{{json registrations}}};
+    window.allRegistrations = {{{json allRegistrations}}};
+    window.statusMap = {{{json statusMap}}};
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+
+        // Remove existing event listener to prevent multiple triggers
+        const confirmActionBtn = document.getElementById("previewActionBtn");
+        const newConfirmActionBtn = confirmActionBtn.cloneNode(true);
+        confirmActionBtn.parentNode.replaceChild(newConfirmActionBtn, confirmActionBtn);
+
+
+        // Remove existing event listener to prevent multiple triggers
+        const prevActionBtn = document.getElementById("previewActionBtn");
+        const newprevActionBtn = prevActionBtn.cloneNode(true);
+        prevActionBtn.parentNode.replaceChild(newprevActionBtn, prevActionBtn);
+
+
+        // Initialize data from server-side variables
+        window.registrations = window.registrations || [];
+        window.allRegistrations = window.allRegistrations || [];
+
+        // Format date function
+        function formatDate(dateString) {
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            const date = new Date(dateString);
+            const formattedDate = date.toLocaleDateString('en-US', options);
+            const formattedTime = date.toLocaleTimeString('en-US', { hour12: false });
+            return `${formattedDate} - ${formattedTime}`;
+        }
+
+        // Filter registration data
+        function updateRegistrationTable(filterValue) {
+            const tableBody = document.getElementById('registrationTableBody');
+            const noDataMessage = document.getElementById('noDataMessage');
+            tableBody.innerHTML = '';
+
+            // Determine which data to use
+            const data = filterValue === 'pending' ? window.registrations : window.allRegistrations;
+            console.log("allRegistrations",allRegistrations)
+
+            if (!data || !Array.isArray(data) || data.length === 0) {
+                noDataMessage.style.display = 'block';
+                return;
+            } else {
+                noDataMessage.style.display = 'none';
+            }
+
+            // Hide or show the status column based on the filter value
+            const statusColumns = document.querySelectorAll('.status-column');
+            const statusColumnHeaders = document.querySelectorAll('.status-column-header');
+            if (filterValue === 'pending') {
+                statusColumns.forEach(column => column.style.display = 'none');
+                statusColumnHeaders.forEach(header => header.style.display = 'none');
+            } else {
+                statusColumns.forEach(column => column.style.display = '');
+                statusColumnHeaders.forEach(header => header.style.display = '');
+            }
+            data.forEach(registration => {
+                const row = document.createElement('tr');
+
+                // Create action buttons based on filter type
+                const actionButtons = filterValue === 'pending'
+                    ? `
+                    <button class="btn btn-info view-btn" data-id="${registration._id}">View</button>
+                  `
+                    : `<button class="btn btn-info view-btn-progress" data-id="${registration._id}" onclick="window.location.href='/officer/progress/${registration._id}'">View Progress</button>`;
+
+                // Only add user data if available
+                const userData = registration?.userData ? `${registration.userData.Fname || '-'} ${registration.userData.Lname || '-'}` : '-';
+
+                row.innerHTML = `
+                <td>${userData}</td>
+                <td>${formatDate(registration.date) || '-'}</td>
+                <td class="status-column">${window.statusMap[registration.status] || '-'}</td>
+                <td>
+                    ${actionButtons}
+                </td>
+            `;
+                tableBody.appendChild(row);
+            });
+
+            // Reattach event listeners
+            attachButtonListeners();
+        }
+
+        // Attach event listeners to buttons
+        function attachButtonListeners() {
+            // View button listeners (always present)
+            document.querySelectorAll('.view-btn').forEach(button => {
+                button.addEventListener('click', function () {
+                    const registrationId = this.getAttribute('data-id');
+                    window.location.href = `/officer/view/${registrationId}`;
+                });
+            });
+
+
+            let actionType = '';
+            let registrationId = '';
+
+            document.querySelectorAll(".accept-btn, .reject-btn").forEach(button => {
+                button.addEventListener("click", function () {
+                    actionType = this.classList.contains("accept-btn") ? 'accept' : 'reject';
+                    registrationId = this.getAttribute("data-id");
+                    document.getElementById("actionType").textContent = actionType;
+                    if (actionType === 'reject') {
+                        document.getElementById("rejectReasonContainer").style.display = 'block';
+                        document.getElementById("signatureContainer").style.display = 'none';
+                    } else if (actionType === 'accept' && '{{officer.type}}' === 'Joint Registrar') {
+                        document.getElementById("rejectReasonContainer").style.display = 'none';
+                        document.getElementById("signatureContainer").style.display = 'block';
+                    } else {
+                        document.getElementById("rejectReasonContainer").style.display = 'none';
+                        document.getElementById("signatureContainer").style.display = 'none';
+                    }
+                    new bootstrap.Modal(document.getElementById("confirmationModal")).show();
+                });
+            });
+
+            const canvas = document.getElementById("signatureCanvas");
+            const ctx = canvas.getContext("2d");
+            let drawing = false;
+
+            canvas.addEventListener("mousedown", () => {
+                drawing = true;
+                ctx.beginPath();
+            });
+
+            canvas.addEventListener("mousemove", (event) => {
+                if (drawing) {
+                    ctx.lineTo(event.offsetX, event.offsetY);
+                    ctx.stroke();
+                }
+            });
+
+            canvas.addEventListener("mouseup", () => {
+                drawing = false;
+            });
+
+
+
+
+            document.getElementById("clearSignatureBtn").addEventListener("click", () => {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            });
+
+            document.getElementById("signatureUpload").addEventListener("change", function () {
+                const file = this.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        const img = new Image();
+                        img.onload = function () {
+                            if (img.width === 400 && img.height === 200) {
+                                const uploadedSignature = document.getElementById("uploadedSignature");
+                                uploadedSignature.src = e.target.result;
+                                uploadedSignature.style.display = 'block';
+                                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                            } else {
+                                alert("Image must be 400x200 pixels.");
+                                document.getElementById("signatureUpload").value = '';
+                            }
+                        };
+                        img.src = e.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            document.querySelectorAll('input[name="signatureOption"]').forEach(radio => {
+                radio.addEventListener('change', function () {
+                    if (this.value === 'draw') {
+                        document.getElementById("drawSignatureContainer").style.display = 'block';
+                        document.getElementById("uploadSignatureContainer").style.display = 'none';
+                    } else {
+                        document.getElementById("drawSignatureContainer").style.display = 'none';
+                        document.getElementById("uploadSignatureContainer").style.display = 'block';
+                    }
+                });
+            });
+
+
+
+            document.getElementById("previewActionBtn").addEventListener("click", function () {
+                // Assuming these variables are defined somewhere globally
+                const officerType = "{{officer.type}}";
+
+                if (officerType === 'Joint Registrar') {
+                    const reason = actionType === 'reject' ? document.getElementById("rejectReason").value : '';
+                    let signatureDataUrl = '';
+
+                    if (actionType === 'accept' && officerType === 'Joint Registrar') {
+                        const uploadedSignature = document.getElementById("uploadedSignature");
+                        if (uploadedSignature.style.display === 'block') {
+                            signatureDataUrl = uploadedSignature.src;
+                        } else if (typeof canvas !== 'undefined') {
+                            signatureDataUrl = canvas.toDataURL("image/png");
+                        }
+                    }
+
+                    // Find the registration details
+                    const registration = window.registrations.find(reg => reg._id === registrationId);
+
+                    // Get current date for the report
+                    const currentDate = new Date().toLocaleDateString('en-IN', {
+                        day: '2-digit',
+                        month: 'long',
+                        year: 'numeric'
+                    });
+
+                    const previewContent = `  
+                    
+                   <div class="container-fluid p-4" style="font-family: 'Times New Roman', Times, serif;">
+                <div class="text-center mb-4">
+                    <img src="assets/img/kerala_govt_2.png" alt="Government Emblem" style="height: 100px;">
+                    <h3 class="mt-3" style="font-weight: bold;">GOVERNMENT OF KERALA</h3>
+                    <h4>Department of Co-operation</h4>
+                    <h5>Registration Certificate</h5>
+                </div>
+                <div class="row mb-4">
+                    <div class="col-6">
+                        <p><strong>No: REG/${registration._id.slice(-6)}</strong></p>
+                    </div>
+                    <div class="col-6 text-end">
+                        <p><strong>Date: ${currentDate}</strong></p>
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <table class="table table-bordered" style="background-color: #f8f9fa;">
+                        <tbody>
+                            <tr><td><strong>Society Name</strong></td><td>${registration.Sname || '-'}</td></tr>
+                            <tr><td><strong>Registration Type</strong></td><td>${registration.Stype || '-'}</td></tr>
+                            <tr><td><strong>Category</strong></td><td>${registration.Scategory || '-'}</td></tr>
+                            <tr><td><strong>Description</strong></td><td>${registration.Catdesc || '-'}</td></tr>
+                            <tr><td><strong>Address</strong></td><td>${registration.Paddress || '-'}, ${registration.Postoffice || '-'}, ${registration.Pincode || '-'}</td></tr>
+                            <tr><td><strong>Area of Operation</strong></td><td>${registration.AreaOperation || '-'}</td></tr>
+                            <tr><td><strong>Chief Promoter</strong></td><td>${registration.ChiefPromoter || '-'}</td></tr>
+                            <tr>
+                                <td><strong>Contact Details</strong></td>
+                                <td>
+                                    Phone: ${registration.Lphone || '-'}<br>
+                                    Mobile: ${registration.Mobile || '-'}<br>
+                                    Email: ${registration.Email || '-'}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="row mt-5">
+                    <div class="col-7"></div>
+                    <div class="col-5 text-end">
+                        <img src="${signatureDataUrl}" alt="Signature" style="width: 200px; height: 100px;"><br>
+                        <strong>Joint Registrar</strong><br>
+                        Department of Co-operation<br>
+                        Government of Kerala
+                    </div>
+                </div>
+            </div>
+        `;
+
+                    document.getElementById("previewContent").innerHTML = previewContent;
+                    new bootstrap.Modal(document.getElementById("previewModal")).show();
+                } else {
+                    const reason = actionType === 'reject' ? document.getElementById("rejectReason").value : '';
+                    fetch(`/officer/${actionType}/${registrationId}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ reason, })
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+
+                            if (data.success) {
+                                location.reload(); // Refresh the page after the process is completed
+                            } else {
+                                alert(`Failed to ${actionType} registration`);
+                            }
+                        })
+                        .catch(error => {
+                            console.error(`Error ${actionType}ing registration:`, error);
+                            alert(`Error: Unable to ${actionType} registration`);
+                        });
+                }
+            });
+
+            document.getElementById("confirmActionBtn").addEventListener("click", function () {
+                const reason = actionType === 'reject' ? document.getElementById("rejectReason").value : '';
+                let signatureDataUrl = '';
+                if (actionType === 'accept' && '{{officer.type}}' === 'Joint Registrar') {
+                    const uploadedSignature = document.getElementById("uploadedSignature");
+                    if (uploadedSignature.style.display === 'block') {
+                        signatureDataUrl = uploadedSignature.src;
+                    } else {
+                        signatureDataUrl = canvas.toDataURL("image/png");
+                    }
+
+                }
+
+
+                // Convert the preview content to base64
+                const previewContent = document.getElementById("previewContent").innerHTML;
+                const previewBase64 = btoa(unescape(encodeURIComponent(previewContent)));
+
+                // Show the loader modal
+                new bootstrap.Modal(document.getElementById("loaderModal")).show();
+
+                fetch(`/officer/${actionType}/${registrationId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ reason, signature: signatureDataUrl, preview: previewBase64 })
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        // Hide the loader modal
+                        const loaderModal = bootstrap.Modal.getInstance(document.getElementById("loaderModal"));
+                        loaderModal.hide();
+
+                        if (data.success) {
+                            location.reload(); // Refresh the page after the process is completed
+                        } else {
+                            alert(`Failed to ${actionType} registration`);
+                        }
+                    })
+                    .catch(error => {
+                        console.error(`Error ${actionType}ing registration:`, error);
+                        alert(`Error: Unable to ${actionType} registration`);
+                    });
+            });
+
+            // Refresh the page when the modal is closed or canceled
+            document.getElementById("confirmationModal").addEventListener('hidden.bs.modal', function () {
+                location.reload();
+            });
+        }
+
+        // Function to fetch updated data
+        function fetchUpdatedData() {
+            fetch('/officer/getRegistrations')
+                .then(response => response.json())
+                .then(data => {
+                    window.registrations = data.registrations;
+                    window.allRegistrations = data.allRegistrations;
+                    const currentFilter = document.getElementById('registrationFilter').value;
+                    updateRegistrationTable(currentFilter);
+                })
+                .catch(error => {
+                    console.error('Error fetching updated data:', error);
+                    location.reload();
+                });
+        }
+
+        // Add event listener for filter dropdown
+        const filterSelect = document.getElementById('registrationFilter');
+        filterSelect.addEventListener('change', function () {
+            updateRegistrationTable(this.value);
+        });
+
+
+
+
+
+        // Initial setup
+        updateRegistrationTable('pending');
+        attachButtonListeners();
+    });
+</script>

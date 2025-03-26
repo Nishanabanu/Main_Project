@@ -1,6 +1,7 @@
 var db = require("../config/connection");
 var collections = require("../config/collections");
 const { statusMap } = require("./userHelper");
+const { ObjectId } = require("mongodb");
 const objectId = require("mongodb").ObjectID;
 
 
@@ -95,9 +96,90 @@ module.exports = {
           .collection(collections.REGISTRATION)
           .updateOne({ _id: objectId(registrationId) }, { $set: updateData });
 
-        // if (response.modifiedCount === 0) {
-        //   reject("Failed to update registration status");
-        // }
+        resolve(response);
+      } catch (error) {
+        console.log(error)
+        reject("Invalid action");
+
+      }
+    });
+  },
+  getAllBylawRegistrations: () => {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const validStatuses = ['form-submitted'];
+        const registrations = await db
+          .get()
+          .collection(collections.BYLAWREGISTRATION)
+          .aggregate([
+            { $match: { status: { $nin: validStatuses } } },
+            { $lookup: { from: 'users', localField: 'userId', foreignField: '_id', as: 'userData' } },
+            { $unwind: { path: '$userData', preserveNullAndEmptyArrays: true } }
+          ])
+          .toArray();
+        resolve(registrations);
+      } catch (error) {
+        reject(error);
+      }
+    });
+  },
+  getBylawRegistrationById: (registrationId) => {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const registration = await db
+          .get()
+          .collection(collections.BYLAWREGISTRATION)
+          .findOne({ _id: objectId(registrationId) });
+        resolve(registration);
+      } catch (error) {
+        reject(error);
+      }
+    });
+  },
+  changeBylawRegistrationStatus: (registrationId, action, reason = '', userType = '', signature = null, pdfUrl) => {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const registration = await db
+          .get()
+          .collection(collections.BYLAWREGISTRATION)
+          .findOne({ _id: new objectId(registrationId) });
+
+        if (!registration) {
+          reject("Registration not found");
+        }
+
+        let newStatus;
+        const statusKeys = Object.keys(statusMap);
+        const currentStatusIndex = statusKeys.indexOf(registration.status);
+
+        if (action === 'accepted') {
+          if (currentStatusIndex >= 0 && currentStatusIndex < statusKeys.length - 1) {
+            newStatus = statusKeys[currentStatusIndex + 1];
+          } else {
+            reject("No further status available");
+          }
+        } else if (action === 'rejected') {
+          newStatus = 'rejected';
+        } else {
+          reject("Invalid action");
+        }
+
+        // Prepare update data
+        const updateData = { status: newStatus, rejectedBy: userType };
+        if (action === 'rejected' && reason) {
+          updateData.rejectReason = reason;
+        }
+
+        if (pdfUrl) {
+          updateData.finalReport = pdfUrl
+          updateData.status = 'completed'
+        }
+
+        // Update registration status
+        const response = await db
+          .get()
+          .collection(collections.BYLAWREGISTRATION)
+          .updateOne({ _id: objectId(registrationId) }, { $set: updateData });
 
         resolve(response);
       } catch (error) {
@@ -109,13 +191,13 @@ module.exports = {
   },
   ///////ADD notification/////////////////////                                         
   addnotification: (notification, callback) => {
-    // Convert officerId and userId to ObjectId if they are provided in the notification
+    // Convert officerId and userId to objectId if they are provided in the notification
     if (notification.officerId) {
       notification.officerId = objectId(notification.officerId); // Convert officerId to objectId
     }
 
     if (notification.userId) {
-      notification.userId = objectId(notification.userId); // Convert userId to ObjectId
+      notification.userId = objectId(notification.userId); // Convert userId to objectId
     }
 
     notification.createdAt = new Date(); // Set createdAt as the current date and time
@@ -246,7 +328,7 @@ module.exports = {
       try {
         const feedbacks = await db.get()
           .collection(collections.FEEDBACK_COLLECTION)
-          .find({ officerId: objectId(officerId) }) // Convert officerId to ObjectId
+          .find({ officerId: objectId(officerId) }) // Convert officerId to objectId
           .toArray();
         resolve(feedbacks);
       } catch (error) {
@@ -639,6 +721,146 @@ module.exports = {
           resolve(result);
         })
 
+    });
+  },
+
+  createNotification: (officerId, message) => {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const notification = {
+          officerId: objectId(officerId),
+          message,
+          isRead: false,
+          timestamp: new Date()
+        };
+        const result = await db.get().collection(collections.NOTIFICATIONS_COLLECTION).insertOne(notification);
+        resolve(result.ops[0]);
+      } catch (error) {
+        reject(error);
+      }
+    });
+  },
+
+  getNotifications: (officerId) => {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const notifications = await db.get().collection(collections.NOTIFICATIONS_COLLECTION)
+          .find({ officerId: objectId(officerId),isRead: false })
+          .sort({ timestamp: -1 })
+          .toArray();
+        resolve(notifications);
+      } catch (error) {
+        reject(error);
+      }
+    });
+  },
+
+  markNotificationAsRead: (notificationId) => {
+    return new Promise(async (resolve, reject) => {
+      try {
+        await db.get().collection(collections.NOTIFICATIONS_COLLECTION)
+          .updateOne({ _id: objectId(notificationId) }, { $set: { isRead: true } });
+        resolve();
+      } catch (error) {
+        reject(error);
+      }
+    });
+  },
+
+  getUnreadNotificationCount: (officerId) => {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const count = await db.get().collection(collections.NOTIFICATIONS_COLLECTION)
+          .countDocuments({ officerId: objectId(officerId), isRead: false });
+        resolve(count);
+      } catch (error) {
+        reject(error);
+      }
+    });
+  },
+
+  getOfficersByType: (type) => {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const officers = await db.get().collection(collections.OFFICERS_COLLECTION)
+          .find({ type })
+          .toArray();
+        resolve(officers);
+      } catch (error) {
+        reject(error);
+      }
+    });
+  },
+
+  // Register a complaint
+  registerComplaint: (userId, complaintText) => {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const complaint = {
+          userId: ObjectId(userId),
+          text: complaintText,
+          status: 'pending', // pending, resolved, forwarded
+          assignedTo: 'Assistant Registrar', // Default assignment
+          resolutionMessage: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+        const result = await db.get().collection(collections.COMPLAINTS_COLLECTION).insertOne(complaint);
+        resolve(result.ops[0]);
+      } catch (error) {
+        reject(error);
+      }
+    });
+  },
+
+  // Get complaints assigned to an officer
+  getComplaintsByRole: (role) => {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const complaints = await db.get().collection(collections.COMPLAINTS_COLLECTION)
+          .find({ assignedTo: role ,status:{$ne:'resolved'}})
+          .sort({ createdAt: -1 })
+          .toArray();
+        resolve(complaints);
+      } catch (error) {
+        reject(error);
+      }
+    });
+  },
+
+  // Update complaint status
+  updateComplaintStatus: (complaintId, status, resolutionMessage, assignedTo = null) => {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const updateData = {
+          status,
+          resolutionMessage,
+          updatedAt: new Date(),
+        };
+        if (assignedTo) {
+          updateData.assignedTo = assignedTo;
+        }
+        await db.get().collection(collections.COMPLAINTS_COLLECTION)
+          .updateOne({ _id: ObjectId(complaintId) }, { $set: updateData });
+        resolve();
+      } catch (error) {
+        reject(error);
+      }
+    });
+  },
+
+  // Get complaints for a user
+  getUserComplaints: (userId) => {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const complaints = await db.get().collection(collections.COMPLAINTS_COLLECTION)
+          .find({ userId: ObjectId(userId) })
+          .sort({ createdAt: -1 })
+          .toArray();
+        resolve(complaints);
+      } catch (error) {
+        reject(error);
+      }
     });
   },
 };

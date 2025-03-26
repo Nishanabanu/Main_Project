@@ -1,0 +1,61 @@
+<main id="main" class="main p-30">
+  <div class="pagetitle"></div>
+        <h4>Hey {{officer.officername}}, <br> Welcome to {{officer.type}} Portal</h4>
+          <nav>
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/officer">Home</a></li>
+        <li class="breadcrumb-item active">{{officer.type}} Portal</li>
+      </ol>
+    </nav>
+    <div class="card shadow-sm p-3">
+      <div class="card-body p-6">
+        <h4 class="text-primary">Notifications</h4>
+        <ul id="notification-list" class="list-group">
+          {{#each notifications}}
+            <li class="list-group-item {{#unless this.isRead}}list-group-item-warning{{/unless}}">
+              {{this.message}}
+              {{#unless this.isRead}}
+                <button class="btn btn-sm btn-success float-end mark-as-read" data-id="{{this._id}}">Mark as Read</button>
+              {{/unless}}
+            </li>
+            <hr>
+          {{/each}}
+        </ul>
+      </div>
+    </div>
+</main>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    document.body.addEventListener('click', function (e) {
+      if (e.target.classList.contains('mark-as-read')) {
+        const notificationId = e.target.getAttribute('data-id');
+        const button = e.target;
+        button.disabled = true;
+        button.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Marking...';
+
+        fetch(`/officer/notifications/read/${notificationId}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }).then(response => response.json()).then(data => {
+          if (data.success) {
+            button.parentElement.classList.remove('list-group-item-warning');
+            button.remove();
+            const unreadCountElem = document.getElementById('unread-count');
+            const unreadCount = parseInt(unreadCountElem.textContent, 10) - 1;
+            unreadCountElem.textContent = unreadCount;
+          } else {
+            button.disabled = false;
+            button.innerHTML = 'Mark as Read';
+          }
+        }).catch(error => {
+          console.error('Error marking notification as read:', error);
+          button.disabled = false;
+          button.innerHTML = 'Mark as Read';
+        });
+      }
+    });
+  });
+</script>

@@ -21,7 +21,7 @@ const verifySignedIn = (req, res, next) => {
 router.get("/", verifySignedIn, function (req, res, next) {
   let administator = req.session.admin;
   adminHelper.getAllProducts().then((products) => {
-    res.render("admin/home", { admin: true, products, layout: "admin-layout", administator });
+    res.render("admin/users/all-users", { admin: true, products, layout: "admin-layout", administator });
   });
 });
 
@@ -352,6 +352,120 @@ router.post("/search", verifySignedIn, function (req, res) {
   adminHelper.searchProduct(req.body).then((response) => {
     res.render("admin/search-result", { admin: true, layout: "admin-layout", administator, response });
   });
+});
+
+
+// Training  Material
+
+// Get all training materials
+router.get('/materials', verifySignedIn, async (req, res) => {
+  try {
+    const materials = await adminHelper.getAllMaterials();
+    res.render('admin/training-materials', { admin: true, layout: 'admin-layout', materials });
+
+  } catch (error) {
+    console.error('Error fetching training materials:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+// Create new training material
+router.post('/materials/create', async (req, res) => {
+  try {
+    const { title, description, videoUrl } = req.body;
+    if (req.files.documents && !Array.isArray(req.files.documents)) {
+      req.files.documents = [req.files.documents];
+    }
+    var documents = req.files.documents ?? [];
+
+    const documentPaths = [];
+    documents?.forEach((file, index) => {
+      if (file) {
+        const uniqueFileName = `${Date.now()}-${index}-${file?.name?.replace(/\s+/g, '')}`;
+        const filePath = `/materials-documents/${uniqueFileName}`;
+
+        file.mv(`./public${filePath}`, (err) => {
+          if (err) {
+            console.error(`File upload error (${file.name}):`, err);
+          }
+        });
+
+        documentPaths.push(filePath);
+      }
+    });
+
+    await adminHelper.addMaterial({ title, description, videoUrl, documents: documentPaths });
+    res.redirect('/admin/materials');
+  } catch (error) {
+    console.error('Error creating training material:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+// Update training material
+router.post('/materials/update/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { title, description, videoUrl } = req.body;
+    if (req.files.documents && !Array.isArray(req.files.documents)) {
+      req.files.documents = [req.files.documents];
+    }
+    var documents = req.files.documents ?? [];
+
+    const documentPaths = [];
+    documents?.forEach((file, index) => {
+      if (file) {
+        const uniqueFileName = `${Date.now()}-${index}-${file?.name?.replace(/\s+/g, '')}`;
+        const filePath = `/materials-documents/${uniqueFileName}`;
+
+        file.mv(`./public${filePath}`, (err) => {
+          if (err) {
+            console.error(`File upload error (${file.name}):`, err);
+          }
+        });
+
+        documentPaths.push(filePath);
+      }
+    });
+
+    await adminHelper.updateMaterial(id, { title, description, videoUrl, documents: documentPaths });
+    res.redirect('/admin/materials');
+  } catch (error) {
+    console.error('Error updating training material:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+// Delete training material
+router.post('/materials/delete/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    await adminHelper.deleteMaterial(id);
+
+    
+    res.redirect('/admin/materials');
+  } catch (error) {
+    console.error('Error deleting training material:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+// AI Chatbot settings page
+router.get('/ai-chatbot-settings', verifySignedIn, async (req, res) => {
+  let administator = req.session.admin;
+  const settings = await adminHelper.getAIChatbotSettings();
+  res.render('admin/ai-chatbot-settings', { admin: true, layout: 'admin-layout', administator, settings });
+});
+
+// Update AI Chatbot settings
+router.post('/ai-chatbot-settings', verifySignedIn, async (req, res) => {
+  try {
+    const { prompt } = req.body;
+    await adminHelper.updateAIChatbotSettings({ prompt });
+    res.redirect('/admin/ai-chatbot-settings');
+  } catch (error) {
+    console.error('Error updating AI chatbot settings:', error);
+    res.status(500).send('Internal Server Error');
+  }
 });
 
 

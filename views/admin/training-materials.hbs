@@ -1,0 +1,146 @@
+<main id="main" class="main">
+
+  <div class="page-title">
+    <h1>Manage Materials</h1>
+    <nav>
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/admin">Dashboard</a></li>
+        <li class="breadcrumb-item">Materials</li>
+        <li class="breadcrumb-item active">All Materials</li>
+      </ol>
+    </nav>
+  </div><!-- End Page Title -->
+
+  <section class="section">
+    <div class="row">
+      <div class="col-lg-12">
+
+        <div class="card">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center">
+              <h5 class="card-title">Training Materials</h5>
+              <button class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#createTrainingModal">+ Create New Training Material</button>
+            </div>
+
+            <div class="table-responsive">
+              <table class="table data-table">
+                <thead>
+                  <tr>
+                    <th>Title</th>
+                    <th>Description</th>
+                    <th>Video URL</th>
+                    <th>Documents</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {{#each materials}}
+                  <tr>
+                  <td >{{truncate this.title }}</td>
+                  <td >{{truncate this.description }}</td>
+                  <td><a href="{{this.videoUrl}}" target="_blank">View Video</a></td>
+                  <td>
+                  <ul>
+                  {{#each this.documents}}
+                  <li><a href="{{this}}" target="_blank">Document {{inc @index}}</a></li>
+                  {{/each}}
+                  </ul>
+                  </td>
+                  <td>
+                  <div class="d-flex gap-2">
+                  <button class="btn btn-dark btn-sm" data-bs-toggle="modal" data-bs-target="#updateTrainingModal-{{this._id}}" onclick="initializeModal('{{this._id}}')"><i class="bi bi-pen"></i></button>
+                  <form action="/admin/materials/delete/{{this._id}}" method="POST">
+                  <button type="submit" onclick="return confirm('Are You Sure to Delete This Material?')" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i></button>
+                  </form>
+                  </div>
+                  </td>
+                  </tr>
+                  {{/each}}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Create Training Modal -->
+  <div class="modal fade" id="createTrainingModal" tabindex="-1" aria-labelledby="createTrainingModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="createTrainingModalLabel">Create Training Material</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form action="/admin/materials/create" method="POST" enctype="multipart/form-data">
+            <div class="mb-3">
+              <label for="title" class="form-label">Title</label>
+              <input type="text" id="title" name="title" class="form-control" required>
+            </div>
+            <div class="mb-3">
+              <label for="description" class="form-label">Description</label>
+              <textarea id="description" name="description" class="form-control" rows="3" required></textarea>
+            </div>
+            <div class="mb-3">
+              <label for="videoUrl" class="form-label">Video URL</label>
+              <input type="url" id="videoUrl" name="videoUrl" class="form-control" required>
+            </div>
+            <div class="mb-3">
+              <label for="documents" class="form-label">Documents</label>
+              <input type="file" id="documents" name="documents" class="form-control" multiple required>
+            </div>
+            <button type="submit" class="btn btn-primary">Create</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Update Training Modal -->
+  {{#each materials}}
+  <div class="modal fade" id="updateTrainingModal-{{this._id}}" tabindex="-1" aria-labelledby="updateTrainingModalLabel-{{this._id}}" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="updateTrainingModalLabel-{{this._id}}">Update Training Material</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form action="/admin/materials/update/{{this._id}}" method="POST" enctype="multipart/form-data">
+            <div class="mb-3">
+              <label for="title-{{this._id}}" class="form-label">Title</label>
+              <input type="text" id="title-{{this._id}}" name="title" class="form-control" value="{{this.title}}" required>
+            </div>
+            <div class="mb-3">
+              <label for="description-{{this._id}}" class="form-label">Description</label>
+              <textarea id="description-{{this._id}}" name="description" class="form-control" rows="3" required>{{this.description}}</textarea>
+            </div>
+            <div class="mb-3">
+              <label for="videoUrl-{{this._id}}" class="form-label">Video URL</label>
+              <input type="url" id="videoUrl-{{this._id}}" name="videoUrl" class="form-control" value="{{this.videoUrl}}" required>
+            </div>
+            <div class="mb-3">
+              <label for="documents-{{this._id}}" class="form-label">Documents</label>
+              <input type="file" id="documents-{{this._id}}" name="documents" class="form-control" multiple>
+            </div>
+            <button type="submit" class="btn btn-primary">Update</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  {{/each}}
+
+<script>
+  function initializeModal(id) {
+    const modalElement = document.getElementById(`updateTrainingModal-${id}`);
+    if (modalElement) {
+      const modalInstance = new bootstrap.Modal(modalElement);
+      modalInstance.show();
+    }
+  }
+</script>
+</main><!-- End #main -->

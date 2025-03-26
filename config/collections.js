@@ -10,6 +10,11 @@ module.exports = {
     NOTIFICATIONS_COLLECTION: "notification",
     OFFICERS_COLLECTION: "officers",
     REGISTRATION: "registrations",
-    BYLAWREGISTRATION: "bylaw-registrations"
+    BYLAWREGISTRATION: "bylaw-registrations",
+    AUDIT_COLLECTION: "audit",
+    MATERIALS_COLLECTION :'meterials',
+    SETTINGS_COLLECTION: 'settings',
+    CHAT_MESSAGES_COLLECTION: 'chat_messages',
+    COMPLAINTS_COLLECTION: 'complaints'
 
 }

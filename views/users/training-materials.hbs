@@ -1,0 +1,108 @@
+<div class="container mt-20 mb-30">
+  <div class="card shadow-sm p-3">
+    <div class="card-body p-6">
+      <h4 class="text-primary">Training Materials</h4>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Description</th>
+            <th>Video URL</th>
+            <th>Documents</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each trainingMaterials}}
+          <tr>
+            <td>{{truncate this.title}}</td>
+            <td>{{truncate this.description}}</td>
+            <td><a href="{{this.videoUrl}}" target="_blank">View Video</a></td>
+            <td>
+              <ul>
+                {{#each this.documents}}
+                <li><a href="{{this}}" target="_blank">Document {{inc @index}}</a></li>
+                {{/each}}
+              </ul>
+            </td>
+            <td>
+              {{#if (eq this.status "completed")}}
+              <a href="/training/certificate/{{this._id}}" class="btn btn-primary mt-2">Download Certificate</a>
+              {{else}}
+              <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#viewModal-{{this._id}}">View</button>
+              {{/if}}
+            </td>
+          </tr>
+
+          <!-- Modal -->
+          <div class="modal fade" id="viewModal-{{this._id}}" tabindex="-1" aria-labelledby="viewModalLabel-{{this._id}}" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+              <div class="modal-content border-0 shadow-lg rounded-3 p-4">
+                <div class="modal-header text-white rounded-top">
+                  <h5 class="modal-title" id="viewModalLabel-{{this._id}}">Title : {{this.title}}</h5>
+                  <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                  <p><span class="fw-bold">Description</span> : <span>{{this.description}}</span></p>
+
+                  <hr />
+
+                  <!-- Video Section -->
+                  <div class="mb-4">
+                    <label class="form-label fw-bold">Video</label>
+                        <a href="{{this.videoUrl}}" target="_blank" class="">Watch Video</a>
+                   
+                  </div>
+
+                  <hr />
+
+                  <!-- Documents Section -->
+                  <div class="mb-3">
+                    <label class="form-label fw-bold">Documents</label>
+                    <ul class="list-group">
+                      {{#each this.documents}}
+                      <li class="list-group-item border-0">
+                        <a href="{{this}}" target="_blank" class="fw-semibold text-decoration-none text-primary">Document {{inc @index}}</a>
+                        <div class="ratio ratio-16x9 mt-2">
+                          <iframe src="{{this}}" class="border rounded"></iframe>
+                        </div>
+                      </li>
+                      {{/each}}
+                    </ul>
+                  </div>
+                </div>
+                <div class="modal-footer bg-light rounded-bottom">
+                  <button type="button" class="btn btn-success" onclick="completeTraining('{{this._id}}')">Complete</button>
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          {{/each}}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+  function completeTraining(materialId) {
+    fetch(`/training/complete/${materialId}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+    .then(response => {
+      if (response.ok) {
+        window.location.reload();
+      } else {
+        alert('Failed to complete training material.');
+      }
+    })
+    .catch(error => {
+      console.error('Error completing training material:', error);
+      alert('Error: Unable to complete training material.');
+    });
+  }
+</script>

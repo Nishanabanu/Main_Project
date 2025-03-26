@@ -1,0 +1,349 @@
+<main id="main" class="main p-30">
+  <div class="pagetitle">
+    <h4>Hey {{officer.officername}}, <br> Welcome to {{officer.type}} Portal</h4>
+    <nav>
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/officer">Home</a></li>
+        <li class="breadcrumb-item active">{{officer.type}} Portal</li>
+      </ol>
+    </nav>
+  </div><!-- End Page Title -->
+  <p>
+    {{#if (eq isAssistant true)}}.{{else}}-{{/if}}
+
+  </p>
+  <div class="card shadow-sm p-3">
+    <div class="card-body p-6">
+      <div class="d-flex justify-content-between align-items-center mb-6">
+        <h4 class="text-primary">
+          Audit Management
+        </h4>
+        {{#if (eq officer.type "Assistant Registrar")}}
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createAuditModal">
+          <i class="bi bi-plus-circle me-2"></i>Send Audit Notification
+        </button>
+        {{/if}}
+      </div>
+
+      <!-- Audit Table -->
+      <table class="table">
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Date</th>
+            <th>Description</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each audits}}
+          <tr>
+            <td>{{this.userData.Fname}} {{this.userData.Lname}}</td>
+            <td>{{this.date}}</td>
+            <td>{{this.description}}</td>
+            <td>
+              {{#if (eq this.status "completed")}}
+              Completed
+              {{else if (eq this.status "deputy-registrar-review")}}
+              Deputy Registrar Review
+              {{else if (eq this.status "assistant-registrar-review")}}
+              Assistant Registrar Review
+              {{else if (eq this.status "submitted")}}
+              Submitted
+              {{else if (eq this.status "pending")}}
+              Pending
+              {{else if (eq this.status "approved")}}
+              Approved
+              {{else}}
+              {{this.status}}
+              {{/if}}
+            </td>
+            <td>
+              {{#if (eq ../officer.type "Assistant Registrar")}}
+              <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#viewAuditModal1-{{this._id}}">
+                View
+              </button>
+              {{else}}
+              <button class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#viewAuditModal2-{{this._id}}">
+                View
+              </button>
+              {{/if}}
+            </td>
+          </tr>
+          {{/each}}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<!-- Create Audit Modal -->
+<div class="modal fade" id="createAuditModal" tabindex="-1" aria-labelledby="createAuditModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="createAuditModalLabel">Create Audit</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="createAuditForm">
+          <div class="mb-3">
+            <label for="userId" class="form-label">User</label>
+            <select id="userId" class="form-select" required>
+              {{#each users}}
+              <option value="{{this._id}}">{{this.Fname}} - {{this.Lname}}</option>
+              {{/each}}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="date" class="form-label">Date</label>
+            <input type="date" id="date" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label for="description" class="form-label">Description</label>
+            <textarea id="description" class="form-control" rows="3" required></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary">Create</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- View Audit Modal -->
+{{#each audits}}
+<div class="modal fade" id="viewAuditModal1-{{this._id}}" tabindex="-1"
+  aria-labelledby="viewAuditModalLabel-{{this._id}}" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="viewAuditModalLabel-{{this._id}}">View Audit</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <table class="table table-bordered">
+          <tbody>
+            <tr>
+              <th>User</th>
+              <td>{{this.userData.Fname}} {{this.userData.Lname}}</td>
+            </tr>
+            <tr>
+              <th>Date</th>
+              <td>{{this.date}}</td>
+            </tr>
+            <tr>
+              <th>Description</th>
+              <td>{{this.description}}</td>
+            </tr>
+            <tr>
+              <th>Status</th>
+        <td>
+              {{#if (eq this.status "completed")}}
+              Completed
+              {{else if (eq this.status "deputy-registrar-review")}}
+              Deputy Registrar Review
+              {{else if (eq this.status "assistant-registrar-review")}}
+              Assistant Registrar Review
+              {{else if (eq this.status "submitted")}}
+              Submitted
+              {{else if (eq this.status "pending")}}
+              Pending
+              {{else if (eq this.status "approved")}}
+              Approved
+              {{else}}
+              {{this.status}}
+              {{/if}}
+            </td>            </tr>
+            <tr>
+              <th>Documents</th>
+              <td>
+                <ul class="list-group">
+                  {{#each this.documents}}
+                  {{#each this}}
+                  <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <a href="{{this}}" target="_blank" class="text-primary">{{@key}}</a>
+                    <div>
+                      <button class="btn btn-sm btn-secondary view-pdf" data-url="{{this}}">View</button>
+                    </div>
+                  </li>
+                  {{/each}}
+                  {{/each}}
+                </ul>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <p>
+          {{#if (eq this.status "submitted")}}
+        <form id="forwardAuditForm-{{this._id}}">
+          <div class="mb-3">
+            <label for="review" class="form-label">Review</label>
+            <textarea id="review" class="form-control" rows="3" required></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary">Forward to Deputy Registrar</button>
+        </form>
+        {{/if}}
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+{{/each}}
+
+
+<!-- View Audit Modal -->
+{{#each audits}}
+<div class="modal fade" id="viewAuditModal2-{{this._id}}" tabindex="-1"
+  aria-labelledby="viewAuditModalLabel-{{this._id}}" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="viewAuditModalLabel-{{this._id}}">View Audit</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <table class="table table-bordered">
+          <tbody>
+            <tr>
+              <th>User</th>
+              <td>{{this.userData.Fname}} {{this.userData.Lname}}</td>
+            </tr>
+            <tr>
+              <th>Date</th>
+              <td>{{this.date}}</td>
+            </tr>
+            <tr>
+              <th>Description</th>
+              <td>{{this.description}}</td>
+            </tr>
+            <tr>
+              <th>Status</th>
+              <td>{{this.status}}</td>
+            </tr>
+            <tr>
+              <th>Documents</th>
+              <td>
+                <ul class="list-group">
+                  {{#each this.documents}}
+                  {{#each this}}
+                  <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <a href="{{this}}" target="_blank" class="text-primary">{{@key}}</a>
+                    <div>
+                      <button class="btn btn-sm btn-secondary view-pdf" data-url="{{this}}">View</button>
+                    </div>
+                  </li>
+                  {{/each}}
+                  {{/each}}
+                </ul>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <p>
+          {{#if (eq this.status "deputy-registrar-review")}}
+        <form id="forwardAuditForm-{{this._id}}">
+          <div class="mb-3">
+            <label for="review" class="form-label">Review</label>
+            <textarea id="review" class="form-control" rows="3" required></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary">Accept</button>
+        </form>
+        {{/if}}
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+{{/each}}
+
+<!-- PDF Viewer Modal -->
+<div class="modal fade" id="pdfModal" tabindex="-1" aria-labelledby="pdfModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="pdfModalLabel">Doc Viewer</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <iframe id="pdfViewer" src="" width="100%" height="600px" style="border: none;"></iframe>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.getElementById('createAuditForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    const userId = document.getElementById('userId').value;
+    const date = document.getElementById('date').value;
+    const description = document.getElementById('description').value;
+
+    if (!userId || !date || !description) {
+      alert('All fields are required');
+      return;
+    }
+
+    fetch('/officer/create-audit', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ userId, date, description })
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          location.reload();
+        } else {
+          alert('Failed to create audit');
+        }
+      })
+      .catch(error => {
+        console.error('Error creating audit:', error);
+        alert('Error: Unable to create audit');
+      });
+  });
+
+  document.querySelectorAll('[id^="forwardAuditForm-"]').forEach(form => {
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      const auditId = this.id.split('-')[1];
+      const review = this.querySelector('#review').value;
+
+      if (!review) {
+        alert('Review is required');
+        return;
+      }
+
+      fetch(`/officer/forward-audit/${auditId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ status: 'forwarded', review })
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            location.reload();
+          } else {
+            alert('Failed to forward audit');
+          }
+        })
+        .catch(error => {
+          console.error('Error forwarding audit:', error);
+          alert('Error: Unable to forward audit');
+        });
+    });
+  });
+
+  document.querySelectorAll('.view-pdf').forEach(button => {
+    button.addEventListener('click', function () {
+      const pdfUrl = this.getAttribute('data-url');
+      document.getElementById('pdfViewer').src = pdfUrl;
+      new bootstrap.Modal(document.getElementById('pdfModal')).show();
+    });
+  });
+</script>

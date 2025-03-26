@@ -5,6 +5,86 @@ const objectId = require("mongodb").ObjectID;
 const { ObjectId } = require('mongodb'); // Import ObjectId for MongoDB
 
 module.exports = {
+  ///////ADD MATERIAL/////////////////////                                         
+  addMaterial: (material) => {
+    return new Promise((resolve, reject) => {
+      // Add createdAt field with the current timestamp
+      material.createdAt = new Date();
+
+      console.log(material);
+      db.get()
+        .collection(collections.MATERIALS_COLLECTION)
+        .insertOne(material)
+        .then((data) => {
+          console.log(data);
+          resolve(); // Resolve with the inserted material's ID
+        })
+        .catch((err) => {
+          console.error('Error inserting material:', err);
+          reject(err); // Reject the promise with the error
+        });
+    });
+  },
+
+  ///////GET ALL MATERIALS/////////////////////                                            
+  getAllMaterials: () => {
+    return new Promise(async (resolve, reject) => {
+      let materials = await db
+        .get()
+        .collection(collections.MATERIALS_COLLECTION)
+        .find()
+        .toArray();
+      resolve(materials);
+    });
+  },
+
+  ///////GET MATERIAL DETAILS/////////////////////                                            
+  getMaterialDetails: (materialId) => {
+    return new Promise((resolve, reject) => {
+      db.get()
+        .collection(collections.MATERIALS_COLLECTION)
+        .findOne({
+          _id: objectId(materialId)
+        })
+        .then((response) => {
+          resolve(response);
+        });
+    });
+  },
+
+  ///////DELETE MATERIAL/////////////////////                                            
+  deleteMaterial: (materialId) => {
+    return new Promise((resolve, reject) => {
+      db.get()
+        .collection(collections.MATERIALS_COLLECTION)
+        .deleteOne({
+          _id: objectId(materialId)
+        })
+        .then((response) => {
+          console.log(response);
+          resolve(response);
+        });
+    });
+  },
+
+  ///////UPDATE MATERIAL/////////////////////                                            
+  updateMaterial: (materialId, materialDetails) => {
+    return new Promise((resolve, reject) => {
+      db.get()
+        .collection(collections.MATERIALS_COLLECTION)
+        .updateOne(
+          { _id: objectId(materialId) },
+          {
+            $set: {
+              ...materialDetails,
+            },
+          }
+        )
+        .then((response) => {
+          resolve();
+        });
+    });
+  },
 
   ///////ADD officer/////////////////////                                         
   addnotification: (notification, callback) => {
@@ -585,4 +665,30 @@ module.exports = {
 
     });
   },
+
+  getAIChatbotSettings: () => {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const settings = await db.get().collection(collections.SETTINGS_COLLECTION).findOne({ type: 'ai-chatbot' });
+        resolve(settings || { prompt: '' });
+      } catch (error) {
+        reject(error);
+      }
+    });
+  },
+
+  updateAIChatbotSettings: (settings) => {
+    return new Promise(async (resolve, reject) => {
+      try {
+        await db.get().collection(collections.SETTINGS_COLLECTION).updateOne(
+          { type: 'ai-chatbot' },
+          { $set: settings },
+          { upsert: true }
+        );
+        resolve();
+      } catch (error) {
+        reject(error);
+      }
+    });
+  }
 };

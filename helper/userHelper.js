@@ -205,18 +205,127 @@ function transformbylawRegistrations(bylawregistrations, manualUpdates = {}) {
   });
 }
 
+const auditStepsStatusMap = {
+  'pending': 'Pending',
+  'submitted': 'Submitted',
+  'assistant-registrar-review': 'Assistant Registrar Review',
+  'deputy-registrar-review': 'Deputy Registrar Review',
+  'approved': 'Approved'
+};
+
+function transformAudits(audits) {
+  return audits.map(audit => {
+    let steps = [
+      'pending',
+      'submitted',
+      'assistant-registrar-review',
+      'deputy-registrar-review',
+      'approved'
+    ];
 
 
+    let transformedSteps = steps.map(step => ({
+      name: step,
+      status: "inactive",
+      label: auditStepsStatusMap[step]
+    }));
+
+    let rejectionStepIndex = -1;
+    const rejectionMapping = {
+      "Assistant Registrar": "assistant-registrar-review",
+      "Deputy Registrar": "deputy-registrar-review"
+    };
+
+    if (rejectionStepIndex !== -1) {
+      // If rejection happened, mark all previous steps as completed
+      transformedSteps.forEach((step, index) => {
+        if (index < rejectionStepIndex) {
+          step.status = "completed";
+        }
+      });
+
+      // Ensure all steps after remain inactive
+      transformedSteps.slice(rejectionStepIndex + 1).forEach(step => {
+        step.status = "inactive";
+      });
+    } else {
+      // Find current status index normally
+      let currentIndex = steps.indexOf(audit.status);
+
+      // Mark steps before the current status as completed
+      transformedSteps.forEach((step, index) => {
+        if (index < currentIndex) {
+          step.status = "completed";
+        }
+      });
+
+      // Mark the current step as active
+      if (currentIndex !== -1) {
+        transformedSteps[currentIndex].status = "active";
+      }
+    }
+
+    return {
+      _id: audit._id,
+      status: audit.status,
+      steps: transformedSteps,
+      userData: audit.userData,
+      description: audit.description,
+      ar_review: audit.ar_review,
+      dr_review: audit.dr_review,
+      date: audit.date
+    };
+  });
+}
+
+const getAuditsByUserId = (userId) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      let audits = await db.get()
+        .collection(collections.AUDIT_COLLECTION)
+        .find({ userId: userId })
+        .toArray();
+      resolve(audits);
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
+const submitAuditDocuments = (auditId, documents) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      await db.get().collection(collections.AUDIT_COLLECTION).updateOne(
+        { _id: ObjectId(auditId) },
+        { $set: { documents, status: 'submitted' } }
+      );
+      resolve();
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
 
 module.exports = {
   statusMap,
   transformRegistrations,
+  transformAudits,
   getAllregistrations: (userId) => {
     return new Promise(async (resolve, reject) => {
       let registrations = await db
         .get()
         .collection(collections.REGISTRATION)
         .find({ userId: new ObjectId(userId) })
+        .toArray();
+      resolve(registrations);
+    });
+  },
+  getAllregistrationsForAdmin: () => {
+    return new Promise(async (resolve, reject) => {
+      let registrations = await db
+        .get()
+        .collection(collections.REGISTRATION)
+        .find()
         .toArray();
       resolve(registrations);
     });
@@ -237,7 +346,16 @@ module.exports = {
       resolve(bylawregistrations);
     });
   },
-
+  getAllbylawregistrationsForAdmin: (userId) => {
+    return new Promise(async (resolve, reject) => {
+      let bylawregistrations = await db
+        .get()
+        .collection(collections.BYLAWREGISTRATION)
+        .find()
+        .toArray();
+      resolve(bylawregistrations);
+    });
+  },
   getnotificationById: (userId) => {
     return new Promise(async (resolve, reject) => {
       try {
@@ -839,4 +957,140 @@ module.exports = {
         console.error('Error inserting room:', err);
       });
   },
+
+  getAllUsers: () => {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const users = await db.get().collection(collections.USERS_COLLECTION).find().toArray();
+        resolve(users);
+      } catch (error) {
+        reject(error);
+      }
+    });
+  },
+
+  getAllAudits: () => {
+    return new Promise(async (resolve, reject) => {
+      try {
+        
+        const audits = await db.get().collection(collections.AUDIT_COLLECTION).aggregate([
+          {
+            $lookup: {
+              from: collections.USERS_COLLECTION,
+              let: { userId: { $toObjectId: "$userId" } },
+              pipeline: [
+                { $match: { $expr: { $eq: ["$_id", "$$userId"] } } }
+              ],
+              as: "userData"
+            }
+          },
+          {
+            $unwind: "$userData"
+          }
+        ]).toArray();
+        resolve(audits);
+      } catch (error) {
+        reject(error);
+      }
+    });
+  },
+
+  createAudit: (auditData) => {
+    return new Promise(async (resolve, reject) => {
+      try {
+        await db.get().collection(collections.AUDIT_COLLECTION).insertOne(auditData);
+        resolve();
+      } catch (error) {
+        reject(error);
+      }
+    });
+  },
+
+  submitAuditDocuments: (auditId, documents) => {
+    return new Promise(async (resolve, reject) => {
+      try {
+        await db.get().collection(collections.AUDIT_COLLECTION).updateOne(
+          { _id: ObjectId(auditId) },
+          { $set: { documents, status: 'submitted' } }
+        );
+        resolve();
+      } catch (error) {
+        reject(error);
+      }
+    });
+  },
+
+  forwardAudit: (auditId, status, review) => {
+    return new Promise(async (resolve, reject) => {
+      try {
+        await db.get().collection(collections.AUDIT_COLLECTION).updateOne(
+          { _id: ObjectId(auditId) },
+          { $set: { status, review } }
+        );
+        resolve();
+      } catch (error) {
+        reject(error);
+      }
+    });
+  },
+
+  getAuditsByUserId,
+  submitAuditDocuments,
+
+  completeTrainingMaterial: (userId, trainingMaterialId) => {
+    return new Promise(async (resolve, reject) => {
+      try {
+        await db.get().collection(collections.USERS_COLLECTION).updateOne(
+          { _id: ObjectId(userId) },
+          { $addToSet: { completedTrainingMaterials: ObjectId(trainingMaterialId) } }
+        );
+        resolve();
+      } catch (error) {
+        reject(error);
+      }
+    });
+  },
+
+  getAllCompletedMeterials: (userId) => {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const user = await db.get().collection(collections.USERS_COLLECTION).findOne({ _id: ObjectId(userId) });
+        const completedMeerials = db.get().collection(collections.MATERIALS_COLLECTION).find({ _id: { $in: user.completedTrainingMaterials ?? [] } }).toArray();
+        resolve(completedMeerials);  
+      } catch (error) {
+        reject(error);
+      }
+    });
+  },
+
+  saveChatMessage: (userId, message, sender) => {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const chatMessage = {
+          userId: ObjectId(userId),
+          message,
+          sender,
+          timestamp: new Date()
+        };
+        await db.get().collection(collections.CHAT_MESSAGES_COLLECTION).insertOne(chatMessage);
+        resolve();
+      } catch (error) {
+        reject(error);
+      }
+    });
+  },
+
+  getChatMessages: (userId) => {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const messages = await db.get().collection(collections.CHAT_MESSAGES_COLLECTION)
+          .find({ userId: ObjectId(userId) })
+          .sort({ timestamp: 1 })
+          .toArray();
+        resolve(messages);
+      } catch (error) {
+        reject(error);
+      }
+    });
+  }
 };

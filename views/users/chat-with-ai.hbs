@@ -1,0 +1,96 @@
+<main id="main" class="main">
+  <div class="container mt-20 mb-30">
+    <div class="card shadow-sm p-3">
+      <div class="card-body p-6">
+        <h4 class="text-primary">Chat with AI</h4>
+        <div id="chat-container" class="mb-3"
+          style="height: 400px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; background-color: #f9f9f9;">
+          <!-- Chat messages will be appended here -->
+          {{#each chatMessages}}
+            <div class="{{#if (eq this.sender 'user')}}user-message{{else}}ai-message{{/if}}">
+              {{this.sender}}: {{this.message}}
+            </div>
+          {{/each}}
+        </div>
+        <form id="chat-form">
+          <div class="input-group">
+            <input type="text" id="user-query" class="form-control" placeholder="Type your message..." required>
+            <button type="submit" class="btn btn-primary">Send</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</main>
+
+<style>
+  #chat-container .user-message {
+    background-color: #e1ffc7;
+    padding: 10px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    align-self: flex-end;
+    max-width: 80%;
+  }
+
+  #chat-container .ai-message {
+    background-color: #d1e7ff;
+    padding: 10px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    align-self: flex-start;
+    max-width: 80%;
+  }
+
+  #chat-container {
+    display: flex;
+    flex-direction: column;
+  }
+</style>
+
+<script>
+  document.getElementById('chat-form').addEventListener('submit', async function (e) {
+    e.preventDefault();
+    const userQuery = document.getElementById('user-query').value;
+    const chatContainer = document.getElementById('chat-container');
+
+    // Append user message to chat
+    const userMessage = document.createElement('div');
+    userMessage.textContent = `You: ${userQuery}`;
+    userMessage.classList.add('user-message');
+    chatContainer.appendChild(userMessage);
+
+    // Clear input field
+    document.getElementById('user-query').value = '';
+
+    // Append "thinking..." message
+    const thinkingMessage = document.createElement('div');
+    thinkingMessage.textContent = 'AI: thinking...';
+    thinkingMessage.classList.add('ai-message');
+    chatContainer.appendChild(thinkingMessage);
+
+    // Scroll to the bottom of the chat container
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+
+    // Query AI
+    try {
+      const response = await fetch('/chat-with-ai/query', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ query: userQuery })
+      });
+      const data = await response.json();
+
+      // Replace "thinking..." message with AI response
+      thinkingMessage.textContent = `AI: ${data.response}`;
+
+      // Scroll to the bottom of the chat container
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    } catch (error) {
+      console.error('Error querying AI:', error);
+      thinkingMessage.textContent = 'AI: Error occurred. Please try again.';
+    }
+  });
+</script>

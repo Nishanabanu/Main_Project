@@ -1,0 +1,456 @@
+<main id="main" class="main p-4">
+    <div class="container">
+        <div class="pagetitle">
+            <h4 class="fw-bold">Registration Details</h4>
+            <nav>
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/officer">Home</a></li>
+                    <li class="breadcrumb-item active">Registration Details</li>
+                </ol>
+            </nav>
+        </div>
+  <div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <p class="m-5"><strong>Date:</strong> {{#if registration.date}}{{registration.date}}{{else}}-{{/if}}</p>
+                <p class="m-5"><strong>Date of General Body Meeting:</strong> {{#if registration.DateGB}}{{registration.DateGB}}{{else}}-{{/if}}</p>
+                <p class="m-5"><strong>No. of Days Given to Convene GB Meeting:</strong> {{#if registration.convencedays}}{{registration.convencedays}}{{else}}-{{/if}}</p>
+                <p class="m-5"><strong>No. of Notice Days Required:</strong> {{#if registration.noticedays}}{{registration.noticedays}}{{else}}-{{/if}}</p>
+                <p class="m-5"><strong>Total Members on Meeting Date:</strong> {{#if registration.members}}{{registration.members}}{{else}}-{{/if}}</p>
+                <p class="m-5"><strong>No. of Members for Quorum:</strong> {{#if registration.quorum}}{{registration.quorum}}{{else}}-{{/if}}</p>
+            </div>
+            <div class="col-md-6">
+                <p class="m-5"><strong>No. of Members Present:</strong> {{#if registration.present}}{{registration.present}}{{else}}-{{/if}}</p>
+                <p class="m-5"><strong>No. of Members Who Voted:</strong> {{#if registration.votes}}{{registration.votes}}{{else}}-{{/if}}</p>
+                <p class="m-5"><strong>No. of Members Who Voted for Amendment:</strong> {{#if registration.amendmentvotes}}{{registration.amendmentvotes}}{{else}}-{{/if}}</p>
+                <p class="m-5"><strong>Departments Accepting Financial Support:</strong> {{#if registration.financial}}{{registration.financial}}{{else}}-{{/if}}</p>
+            </div>
+        </div>
+
+        <h5 class="mt-4">Documents</h5>
+        <ul class="list-group">
+            {{#each registration.documents}}
+                {{#each this}}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <a href="{{this}}" target="_blank" class="text-primary">{{@key}}</a>
+                    <div>
+                        <button class="btn btn-sm btn-secondary view-pdf" data-url="{{this}}">View</button>
+                    </div>
+                </li>
+                {{/each}}
+            {{/each}}
+        </ul>
+
+        <div class="d-flex justify-content-end mt-10">
+            <button class="btn btn-success me-5 accept-btn" data-id="{{registration._id}}">Accept</button>
+            <button class="btn btn-danger reject-btn" data-id="{{registration._id}}">Reject</button>
+        </div>
+    </div>
+</div>
+
+    </div>
+</main>
+
+
+
+<!-- PDF Viewer Modal -->
+<div class="modal fade" id="pdfModal" tabindex="-1" aria-labelledby="pdfModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="pdfModalLabel">Doc Viewer</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <iframe id="pdfViewer" src="" width="100%" height="600px" style="border: none;"></iframe>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Confirmation Modal -->
+<div class="modal fade" id="confirmationModal" tabindex="-1" aria-labelledby="confirmationModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmationModalLabel">Confirm Action</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to <span id="actionType"></span> this registration?
+                <div id="rejectReasonContainer" class="mt-3" style="display: none;">
+                    <label for="rejectReason" class="form-label">Reason for Rejection:</label>
+                    <textarea id="rejectReason" class="form-control" rows="3"></textarea>
+                </div>
+                <div id="signatureContainer" class="mt-3" style="display: none;">
+                    <label class="form-label">Choose how to provide your signature:</label>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="signatureOption" id="drawSignatureOption"
+                            value="draw" checked>
+                        <label class="form-check-label" for="drawSignatureOption">Draw Signature</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="signatureOption" id="uploadSignatureOption"
+                            value="upload">
+                        <label class="form-check-label" for="uploadSignatureOption">Upload Signature</label>
+                    </div>
+                    <div id="drawSignatureContainer" class="mt-3">
+                        <label for="signatureCanvas" class="form-label">Draw your signature:</label>
+                        <canvas id="signatureCanvas" class="border" width="400" height="200"></canvas>
+                        <button type="button" class="btn btn-secondary mt-2" id="clearSignatureBtn">Clear</button>
+                    </div>
+                    <div id="uploadSignatureContainer" class="mt-3" style="display: none;">
+                        <label for="signatureUpload" class="form-label">Upload your signature (PNG, 400x200, white
+                            background):</label>
+                        <input type="file" id="signatureUpload" class="form-control" accept="image/png">
+                        <img id="uploadedSignature" class="mt-2"
+                            style="display: none; max-width: 100%; border: 1px solid #ccc;">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="previewActionBtn">
+                    {{#if (eq officer.type "Joint Registrar")}}Preview{{else}}Confirm{{/if}}
+                </button>
+                {{!-- <button type="button" class="btn btn-primary" id="confirmActionBtn">Confirm</button> --}}
+
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Preview Modal -->
+<div class="modal fade" id="previewModal" tabindex="-1" aria-labelledby="previewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="previewModalLabel">Final Report Preview</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="previewContent">
+                <!-- Preview content will be dynamically generated here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="confirmActionBtn">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loader Modal -->
+<div class="modal fade" id="loaderModal" tabindex="-1" aria-labelledby="loaderModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body text-center">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-3">Generating the report, please wait...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Back to Top Button -->
+<a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i
+        class="bi bi-arrow-up-short"></i></a>
+<script>
+    window.registration = {{{json registration }}};
+</script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const baseUrl = window.location.origin;
+
+        document.querySelectorAll(".view-pdf").forEach(button => {
+            button.addEventListener("click", function () {
+                const pdfPath = this.getAttribute("data-url");
+                const fullPdfUrl = new URL(pdfPath, baseUrl).href; // Ensures proper URL formatting
+
+                fetch(fullPdfUrl, { method: 'HEAD' })
+                    .then(response => {
+                        if (response.ok) {
+                            document.getElementById("pdfViewer").src = fullPdfUrl;
+                            new bootstrap.Modal(document.getElementById("pdfModal")).show();
+                        } else {
+                            alert("Error: PDF file not found (404)");
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Error fetching PDF:", error);
+                        alert("Error: Unable to load PDF");
+                    });
+            });
+        });
+
+        // Remove existing event listener to prevent multiple triggers
+        const confirmActionBtn = document.getElementById("confirmActionBtn");
+        const newConfirmActionBtn = confirmActionBtn.cloneNode(true);
+        confirmActionBtn.parentNode.replaceChild(newConfirmActionBtn, confirmActionBtn);
+
+        // Initialize data from server-side variables
+        window.registration = window.registration
+
+        // Format date function
+        function formatDate(dateString) {
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            const date = new Date(dateString);
+            const formattedDate = date.toLocaleDateString('en-US', options);
+            const formattedTime = date.toLocaleTimeString('en-US', { hour12: false });
+            return `${formattedDate} - ${formattedTime}`;
+        }
+
+        let actionType = '';
+        let registrationId = '';
+
+        document.querySelectorAll(".accept-btn, .reject-btn").forEach(button => {
+            console.log("Debugg...")
+            button.addEventListener("click", function () {
+                actionType = this.classList.contains("accept-btn") ? 'accept' : 'reject';
+                registrationId = this.getAttribute("data-id");
+                document.getElementById("actionType").textContent = actionType;
+                if (actionType === 'reject') {
+                    document.getElementById("rejectReasonContainer").style.display = 'block';
+                    document.getElementById("signatureContainer").style.display = 'none';
+                } else if (actionType === 'accept' && '{{officer.type}}' === 'Joint Registrar') {
+                    document.getElementById("rejectReasonContainer").style.display = 'none';
+                    document.getElementById("signatureContainer").style.display = 'block';
+                } else {
+                    document.getElementById("rejectReasonContainer").style.display = 'none';
+                    document.getElementById("signatureContainer").style.display = 'none';
+                }
+                new bootstrap.Modal(document.getElementById("confirmationModal")).show();
+            });
+        });
+
+        const canvas = document.getElementById("signatureCanvas");
+        const ctx = canvas.getContext("2d");
+        let drawing = false;
+
+        canvas.addEventListener("mousedown", () => {
+            drawing = true;
+            ctx.beginPath();
+        });
+
+        canvas.addEventListener("mousemove", (event) => {
+            if (drawing) {
+                ctx.lineTo(event.offsetX, event.offsetY);
+                ctx.stroke();
+            }
+        });
+
+        canvas.addEventListener("mouseup", () => {
+            drawing = false;
+        });
+
+        document.getElementById("clearSignatureBtn").addEventListener("click", () => {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        });
+
+        document.getElementById("signatureUpload").addEventListener("change", function () {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const img = new Image();
+                    img.onload = function () {
+                        if (img.width === 400 && img.height === 200) {
+                            const uploadedSignature = document.getElementById("uploadedSignature");
+                            uploadedSignature.src = e.target.result;
+                            uploadedSignature.style.display = 'block';
+                            ctx.clearRect(0, 0, canvas.width, canvas.height);
+                        } else {
+                            alert("Image must be 400x200 pixels.");
+                            document.getElementById("signatureUpload").value = '';
+                        }
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        document.querySelectorAll('input[name="signatureOption"]').forEach(radio => {
+            radio.addEventListener('change', function () {
+                if (this.value === 'draw') {
+                    document.getElementById("drawSignatureContainer").style.display = 'block';
+                    document.getElementById("uploadSignatureContainer").style.display = 'none';
+                } else {
+                    document.getElementById("drawSignatureContainer").style.display = 'none';
+                    document.getElementById("uploadSignatureContainer").style.display = 'block';
+                }
+            });
+        });
+
+        document.getElementById("previewActionBtn").addEventListener("click", function () {
+            const officerType = "{{officer.type}}";
+
+            if (officerType === 'Joint Registrar') {
+                const reason = actionType === 'reject' ? document.getElementById("rejectReason").value : '';
+                let signatureDataUrl = '';
+
+                const uploadedSignature = document.getElementById("uploadedSignature");
+                if (uploadedSignature.style.display === 'block') {
+                    signatureDataUrl = uploadedSignature.src;
+                } else if (typeof canvas !== 'undefined') {
+                    signatureDataUrl = canvas.toDataURL("image/png");
+                }
+
+                const registration = window.registration;
+                console.log(registration, 'test');
+                const currentDate = new Date().toLocaleDateString('en-IN', {
+                    day: '2-digit',
+                    month: 'long',
+                    year: 'numeric'
+                });
+
+                const previewContent = `
+                        <div class="container-fluid p-4" style="font-family: 'Times New Roman', Times, serif;">
+                            <div class="text-center mb-4">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/5/5b/Government_of_Kerala_Logo.svg" alt="Government logo" style="height: 100px;">
+                                <h3 class="mt-3" style="font-weight: bold;">GOVERNMENT OF KERALA</h3>
+                                <h4>Department of Co-operation</h4>
+                                <h5>Registration Certificate</h5>
+                            </div>
+                            <div class="row mb-4">
+                                <div class="col-6">
+                                    <p><strong>No: REG/${registration._id.slice(-6)}</strong></p>
+                                </div>
+                                <div class="col-6 text-end">
+                                    <p><strong>Date: ${currentDate}</strong></p>
+                                </div>
+                            </div>
+                            <div class="mb-4">
+                                  <table class="table table-bordered" style="background-color: #f8f9fa;">
+                                    <tbody>
+                                        <tr>
+                                            <td><strong>Date:</strong></td>
+                                            <td>${registration.date || '-'}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Date of General Body Meeting:</strong></td>
+                                            <td>${registration.DateGB || '-'}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>No. of Days Given to Convene GB Meeting:</strong></td>
+                                            <td>${registration.convencedays || '-'}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>No. of Notice Days Required:</strong></td>
+                                            <td>${registration.noticedays || '-'}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Total Members on Meeting Date:</strong></td>
+                                            <td>${registration.members || '-'}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>No. of Members for Quorum:</strong></td>
+                                            <td>${registration.quorum || '-'}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>No. of Members Present:</strong></td>
+                                            <td>${registration.present || '-'}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>No. of Members Who Voted:</strong></td>
+                                            <td>${registration.votes || '-'}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>No. of Members Who Voted for Amendment:</strong></td>
+                                            <td>${registration.amendmentvotes || '-'}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Departments Accepting Financial Support:</strong></td>
+                                            <td>${registration.financial || '-'}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="row mt-5">
+                                <div class="col-7"></div>
+                                <div class="col-5 text-end">
+                                    <img src="${signatureDataUrl}" alt="Signature" style="width: 200px; height: 100px;"><br>
+                                    <strong>Joint Registrar</strong><br>
+                                    Department of Co-operation<br>
+                                    Government of Kerala
+                                </div>
+                            </div>
+                        </div>
+                    `;
+
+                document.getElementById("previewContent").innerHTML = previewContent;
+                new bootstrap.Modal(document.getElementById("previewModal")).show();
+            } else {
+                const reason = actionType === 'reject' ? document.getElementById("rejectReason").value : '';
+                fetch(`/officer/by-law/${actionType}/${registrationId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ reason })
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            window.location.href = '/officer'; // Redirect to root after the process is completed
+                        } else {
+                            alert(`Failed to ${actionType} registration`);
+                        }
+                    })
+                    .catch(error => {
+                        console.error(`Error ${actionType}ing registration:`, error);
+                        alert(`Error: Unable to ${actionType} registration`);
+                    });
+            }
+        });
+
+        document.getElementById("confirmActionBtn").addEventListener("click", function () {
+            const reason = actionType === 'reject' ? document.getElementById("rejectReason").value : '';
+            let signatureDataUrl = '';
+            if (actionType === 'accept' && '{{officer.type}}' === 'Joint Registrar') {
+                const uploadedSignature = document.getElementById("uploadedSignature");
+                if (uploadedSignature.style.display === 'block') {
+                    signatureDataUrl = uploadedSignature.src;
+                } else {
+                    signatureDataUrl = canvas.toDataURL("image/png");
+                }
+            }
+
+            const previewContent = document.getElementById("previewContent").innerHTML;
+            const previewBase64 = btoa(unescape(encodeURIComponent(previewContent)));
+
+            new bootstrap.Modal(document.getElementById("loaderModal")).show();
+            fetch(`/officer/by-law/${actionType}/${registrationId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ reason, signature: signatureDataUrl, preview: previewBase64 })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    const loaderModal = bootstrap.Modal.getInstance(document.getElementById("loaderModal"));
+                    loaderModal.hide();
+
+                    if (data.success) {
+                        window.location.href = '/officer'; // Redirect to root after the process is completed
+                    } else {
+                        alert(`Failed to ${actionType} registration`);
+                    }
+                })
+                .catch(error => {
+                    console.error(`Error ${actionType}ing registration:`, error);
+                    alert(`Error: Unable to ${actionType} registration`);
+                });
+        });
+
+        document.getElementById("confirmationModal").addEventListener('hidden.bs.modal', function () {
+            location.reload();
+        });
+
+
+    });
+</script>

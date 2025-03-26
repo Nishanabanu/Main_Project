@@ -6,6 +6,7 @@ const adminHelper = require("../helper/adminHelper");
 const pdf = require('html-pdf');
 const path = require('path');
 const htmlPdf = require('html-pdf-node');
+const { io } = require("../app");
 
 var router = express.Router();
 var db = require("../config/connection");
@@ -21,7 +22,70 @@ const verifySignedIn = (req, res, next) => {
 };
 
 /* GET admins listing. */
-router.get("/", verifySignedIn, async function (req, res, next) {
+router.get("/", verifySignedIn, async function (req, res) {
+  try {
+    let officer = req.session.officer;
+    const workspaces = await userHelper.getAllworkspaces();
+
+    // Getting Users Registrations and Its count of each status
+    const societyRegistration = await userHelper.getAllregistrationsForAdmin();
+    const bylawRegistrations = await userHelper.getAllbylawregistrationsForAdmin();
+    const allRegistrations = [...(societyRegistration || []), ...(bylawRegistrations || [])];
+
+    const totalApplication = allRegistrations.length;
+    const approvedApplication = allRegistrations.filter(reg => reg.status === 'completed').length;
+    const rejectedApplication = allRegistrations.filter(reg => reg.status === 'rejected').length;
+    const processingApplications = allRegistrations.filter(reg => ['assistant-registrar-review', 'payment', 'deputy-registrar-review', 'joint-registrar-review'].includes(reg.status)).length;
+
+    res.render("officer/home", {
+      admin: true,
+      workspaces,
+      officer,
+      totalApplication,
+      approvedApplication,
+      rejectedApplication,
+      processingApplications
+    });
+  } catch (error) {
+    console.error("Error fetching registrations:", error);
+    res.status(500).send("Something went wrong. Please try again.");
+  }
+});
+
+/* GET admins listing. */
+router.get("/home", verifySignedIn, async function (req, res) {
+  try {
+    let officer = req.session.officer;
+    const workspaces = await userHelper.getAllworkspaces();
+
+    // Getting Users Registrations and Its count of each status
+    const societyRegistration = await userHelper.getAllregistrationsForAdmin();
+    const bylawRegistrations = await userHelper.getAllbylawregistrationsForAdmin();
+    const allRegistrations = [...(societyRegistration || []), ...(bylawRegistrations || [])];
+
+    const totalApplication = allRegistrations.length;
+    const approvedApplication = allRegistrations.filter(reg => reg.status === 'completed').length;
+    const rejectedApplication = allRegistrations.filter(reg => reg.status === 'rejected').length;
+    const processingApplications = allRegistrations.filter(reg => ['assistant-registrar-review', 'payment', 'deputy-registrar-review', 'joint-registrar-review'].includes(reg.status)).length;
+
+    res.render("officer/home", {
+      admin: true,
+      workspaces,
+      officer,
+      totalApplication,
+      approvedApplication,
+      rejectedApplication,
+      processingApplications
+    });
+  } catch (error) {
+    console.error("Error fetching registrations:", error);
+    res.status(500).send("Something went wrong. Please try again.");
+  }
+});
+
+
+/* GET admins listing. */
+router.get("/requests/registration", verifySignedIn, async function (req, res, next) {
   let officer = req.session.officer;
   console.log(req.session.officer);
   try {
@@ -36,7 +100,37 @@ router.get("/", verifySignedIn, async function (req, res, next) {
 
     // Sorting and finding out which are Pending for the approval of this particular user
 
-    res.render("officer/home", {
+    res.render("officer/registration-requests", {
+      officer: true,
+      layout: "layout",
+      officer,
+      registrations,
+      allRegistrations,
+      statusMap: userHelper.statusMap,
+    });
+  } catch (error) {
+    console.error("Error fetching registrations:", error);
+    res.status(500).send("Something went wrong. Please try again.");
+  }
+});
+
+
+/* GET admins listing. */
+router.get("/requests/bylaw", verifySignedIn, async function (req, res, next) {
+  let officer = req.session.officer;
+  try {
+    const allRegistrations = await officerHelper.getAllBylawRegistrations();
+    const userReviewStatus = officerHelper.getUserReviewStatus(
+      req.session.officer.type
+    );
+
+    const registrations = allRegistrations?.filter(
+      (item) => item.status === userReviewStatus
+    );
+
+    // Sorting and finding out which are Pending for the approval of this particular user
+
+    res.render("officer/bylaw-requests", {
       officer: true,
       layout: "layout",
       officer,
@@ -156,19 +250,40 @@ router.post("/accept/:id", verifySignedIn, async function (req, res) {
   }
 });
 
-router.post("/reject/:id", verifySignedIn, function (req, res) {
+router.post("/reject/:id", verifySignedIn, async (req, res) => {
   const registrationId = req.params.id;
   const reason = req.body.reason || null;
   const userType = req.session.officer.type;
-  officerHelper
-    .changeRegistrationStatus(registrationId, "rejected", reason, userType)
-    .then(() => {
-      res.json({ success: true });
-    })
-    .catch((error) => {
-      console.error("Error rejecting registration:", error);
-      res.json({ success: false, error: "Failed to reject registration" });
-    });
+  const officerId = req.session.officer._id;
+
+  try {
+    await officerHelper.changeRegistrationStatus(registrationId, "rejected", reason, userType);
+
+    // Send notifications based on the user type
+    if (userType === "Joint Registrar") {
+      const deputyRegistrars = await officerHelper.getOfficersByType("Deputy Registrar");
+      const assistantRegistrars = await officerHelper.getOfficersByType("Assistant Registrar");
+
+      const message = `Registration ${registrationId} was rejected by Joint Registrar. Reason: ${reason}`;
+
+      for (const officer of [...deputyRegistrars, ...assistantRegistrars]) {
+        await officerHelper.createNotification(officer._id, message);
+      }
+    } else if (userType === "Deputy Registrar") {
+      const assistantRegistrars = await officerHelper.getOfficersByType("Assistant Registrar");
+
+      const message = `Registration ${registrationId} was rejected by Deputy Registrar. Reason: ${reason}`;
+
+      for (const officer of assistantRegistrars) {
+        await officerHelper.createNotification(officer._id, message);
+      }
+    }
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error("Error rejecting registration:", error);
+    res.json({ success: false, error: "Failed to reject registration" });
+  }
 });
 
 router.get("/view/:id", verifySignedIn, async function (req, res) {
@@ -179,7 +294,7 @@ router.get("/view/:id", verifySignedIn, async function (req, res) {
     const registration = await officerHelper.getRegistrationById(
       registrationId
     );
-    res.render("officer/view", {
+    res.render("officer/view-society", {
       officer: true,
       layout: "layout",
       officer,
@@ -189,6 +304,169 @@ router.get("/view/:id", verifySignedIn, async function (req, res) {
   } catch (error) {
     console.error("Error fetching registration:", error);
     res.status(500).send("Something went wrong. Please try again.");
+  }
+});
+
+router.get("/by-law/view/:id", verifySignedIn, async function (req, res) {
+  const registrationId = req.params.id;
+  let officer = req.session.officer;
+
+  try {
+    const registration = await officerHelper.getBylawRegistrationById(
+      registrationId
+    );
+    res.render("officer/view-bylaw", {
+      officer: true,
+      layout: "layout",
+      officer,
+      registration,
+      statusMap: userHelper.statusMap,
+    });
+  } catch (error) {
+    console.error("Error fetching registration:", error);
+    res.status(500).send("Something went wrong. Please try again.");
+  }
+});
+
+router.post("/by-law/accept/:id", verifySignedIn, async function (req, res) {
+  const registrationId = req.params.id;
+  const signature = req.body.signature;
+  const previewBase64 = req.body.preview;
+
+  try {
+    if (req.session.officer.type === 'Joint Registrar') {
+      // Convert base64 to HTML
+      const previewHtml = decodeURIComponent(escape(atob(previewBase64)));
+
+      // Add proper styling and doctype to HTML
+      const fullHtml = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="UTF-8">
+          <title>Registration Certificate</title>
+          <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+          <style>
+            body {
+              font-family: 'Times New Roman', Times, serif;
+              padding: 40px;
+              color: #000;
+            }
+            table {
+              width: 100%;
+              border-collapse: collapse;
+              margin-bottom: 20px;
+            }
+            th, td {
+              border: 1px solid #000;
+              padding: 8px;
+            }
+            .header {
+              text-align: center;
+              margin-bottom: 30px;
+            }
+            .signature-section {
+              margin-top: 50px;
+              position: relative;
+            }
+            .seal {
+              float: left;
+              width: 150px;
+              height: 150px;
+              border: 2px dashed #666;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+            }
+            .signature {
+              float: right;
+              text-align: right;
+            }
+            @page {
+              size: A4;
+              margin: 0;
+            }
+          </style>
+        </head>
+        <body>
+          ${previewHtml}
+        </body>
+      </html>
+    `;
+
+      // PDF generation options
+      const options = {
+        format: 'A4',
+        margin: {
+          top: '20mm',
+          right: '20mm',
+          bottom: '20mm',
+          left: '20mm'
+        },
+        printBackground: true,
+        preferCSSPageSize: true
+      };
+
+      // Create file
+      const pdfPath = path.join(__dirname, `../public/reports/${registrationId}.pdf`);
+
+      // Generate PDF
+      const file = { content: fullHtml };
+      const pdfBuffer = await htmlPdf.generatePdf(file, options);
+
+      // Save PDF file
+      fs.writeFileSync(pdfPath, pdfBuffer);
+
+      // Save the PDF URL in the database
+      const pdfUrl = `/reports/${registrationId}.pdf`;
+      await officerHelper.changeBylawRegistrationStatus(registrationId, "accepted", '', '', signature, pdfUrl);
+    } else {
+      await officerHelper.changeBylawRegistrationStatus(registrationId, "accepted",);
+
+    }
+
+
+    res.json({ success: true });
+
+  } catch (error) {
+    console.error("Error in PDF generation:", error);
+    res.json({ success: false, error: "Failed to generate PDF" });
+  }
+});
+
+router.post("/by-law/reject/:id", verifySignedIn, async (req, res) => {
+  const registrationId = req.params.id;
+  const reason = req.body.reason || null;
+  const userType = req.session.officer.type;
+  const officerId = req.session.officer._id;
+
+  try {
+    await officerHelper.changeBylawRegistrationStatus(registrationId, "rejected", reason, userType);
+
+    // Send notifications based on the user type
+    if (userType === "Joint Registrar") {
+      const deputyRegistrars = await officerHelper.getOfficersByType("Deputy Registrar");
+      const assistantRegistrars = await officerHelper.getOfficersByType("Assistant Registrar");
+
+      const message = `Bylaw Registration ${registrationId} was rejected by Joint Registrar. Reason: ${reason}`;
+
+      for (const officer of [...deputyRegistrars, ...assistantRegistrars]) {
+        await officerHelper.createNotification(officer._id, message);
+      }
+    } else if (userType === "Deputy Registrar") {
+      const assistantRegistrars = await officerHelper.getOfficersByType("Assistant Registrar");
+
+      const message = `Bylaw Registration ${registrationId} was rejected by Deputy Registrar. Reason: ${reason}`;
+
+      for (const officer of assistantRegistrars) {
+        await officerHelper.createNotification(officer._id, message);
+      }
+    }
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error("Error rejecting bylaw registration:", error);
+    res.json({ success: false, error: "Failed to reject bylaw registration" });
   }
 });
 
@@ -202,6 +480,28 @@ router.get("/progress/:id", verifySignedIn, async function (req, res) {
       registrationId
     );
     const transformedRegistrations = userHelper.transformRegistrations([registration]);
+
+    res.render("officer/progress", {
+      officer: true,
+      layout: "layout",
+      officer,
+      registrations: transformedRegistrations,
+      statusMap: userHelper.statusMap,
+    });
+  } catch (error) {
+    console.error("Error fetching registration:", error);
+    res.status(500).send("Something went wrong. Please try again.");
+  }
+});
+router.get("/by-law/progress/:id", verifySignedIn, async function (req, res) {
+  const registrationId = req.params.id;
+  let officer = req.session.officer;
+
+  try {
+    const registration = await officerHelper.getBylawRegistrationById(
+      registrationId
+    );
+    const transformedRegistrations = userHelper.transformbylawRegistrations([registration]);
 
     res.render("officer/progress", {
       officer: true,
@@ -558,13 +858,13 @@ router.post("/signup", async function (req, res) {
   // Check if email or company name already exists
   const existingEmail = await db
     .get()
-    .collection(collections.OFFICER_COLLECTION)
+    .collection(collections.OFFICERS_COLLECTION)
     .findOne({ Email });
   if (existingEmail) errors.email = "This email is already registered.";
 
   const existingCompanyname = await db
     .get()
-    .collection(collections.OFFICER_COLLECTION)
+    .collection(collections.OFFICERS_COLLECTION)
     .findOne({ Companyname });
   if (existingCompanyname)
     errors.Companyname = "This company name is already registered.";
@@ -576,7 +876,7 @@ router.post("/signup", async function (req, res) {
     errors.phone = "Phone number must be exactly 10 digits.";
   const existingPhone = await db
     .get()
-    .collection(collections.OFFICER_COLLECTION)
+    .collection(collections.OFFICERS_COLLECTION)
     .findOne({ Phone });
   if (existingPhone) errors.phone = "This phone number is already registered.";
 
@@ -841,6 +1141,144 @@ router.post("/search", verifySignedIn, function (req, res) {
       response,
     });
   });
+});
+
+router.get('/audit', verifySignedIn, async (req, res) => {
+  let officer = req.session.officer;
+
+  const users = await userHelper.getAllUsers();
+  let audits = await userHelper.getAllAudits();
+  if (officer.type == "Deputy Registrar") {
+    audits = audits.filter((item) => !['pending', 'submitted'].includes(item.status));
+  }
+
+  res.render('officer/audit', { admin: true, officer, users, audits });
+});
+
+// pending
+// approved
+// submitted
+// 'assistant-registrar-review'
+//'deputy-registrar-review
+router.post('/create-audit', verifySignedIn, async (req, res) => {
+  const { userId, date, description } = req.body;
+  try {
+    await userHelper.createAudit({ userId, date, description, status: 'pending' });
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error creating audit:', error);
+    res.json({ success: false, error: 'Failed to create audit' });
+  }
+});
+
+
+
+router.post('/forward-audit/:auditId', verifySignedIn, async (req, res) => {
+  const auditId = req.params.auditId;
+  let officer = req.session.officer;
+  var status = "pending";
+  if (officer.type === 'Assistant Registrar') {
+    status = "deputy-registrar-review";
+  } else {
+    status = "completed";
+  }
+  const { review } = req.body;
+  try {
+    await userHelper.forwardAudit(auditId, status, review);
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error forwarding audit:', error);
+    res.json({ success: false, error: 'Failed to forward audit' });
+  }
+});
+
+// Fetch notifications
+router.get("/notifications", verifySignedIn, async (req, res) => {
+  try {
+    const officerId = req.session.officer._id;
+    const notifications = await officerHelper.getNotifications(officerId);
+    res.render("officer/notifications", { officer: req.session.officer, notifications });
+  } catch (error) {
+    console.error("Error fetching notifications:", error);
+    res.status(500).send("Internal Server Error");
+  }
+});
+
+// Mark notification as read
+router.post("/notifications/read/:id", verifySignedIn, async (req, res) => {
+  try {
+    const notificationId = req.params.id;
+    await officerHelper.markNotificationAsRead(notificationId);
+    res.json({ success: true });
+  } catch (error) {
+    console.error("Error marking notification as read:", error);
+    res.status(500).send("Internal Server Error");
+  }
+});
+
+// Send notification
+router.post("/notifications/send", verifySignedIn, async (req, res) => {
+  try {
+    const { officerId, message } = req.body;
+    const notification = await officerHelper.createNotification(officerId, message);
+    res.json({ success: true });
+  } catch (error) {
+    console.error("Error sending notification:", error);
+    res.status(500).send("Internal Server Error");
+  }
+});
+
+// // View complaints assigned to Assistant Registrar
+// router.get('/complaints/assistant', verifySignedIn, async (req, res) => {
+//   try {
+//     const complaints = await officerHelper.getComplaintsByRole('Assistant Registrar');
+//     res.render('officer/complaints', { officer: req.session.officer, complaints });
+//   } catch (error) {
+//     console.error('Error fetching complaints:', error);
+//     res.status(500).send('Internal Server Error');
+//   }
+// });
+
+// // View complaints assigned to Deputy Registrar
+// router.get('/complaints/deputy', verifySignedIn, async (req, res) => {
+//   try {
+//     const complaints = await officerHelper.getComplaintsByRole('Deputy Registrar');
+//     res.render('officer/complaints', { officer: req.session.officer, complaints });
+//   } catch (error) {
+//     console.error('Error fetching complaints:', error);
+//     res.status(500).send('Internal Server Error');
+//   }
+// });
+
+router.get('/complaints', verifySignedIn, async (req, res) => {
+  try {
+    const userType = req.session.officer.type;
+    const complaints = await officerHelper.getComplaintsByRole(userType);
+
+    res.render('officer/complaints', { officer: req.session.officer, complaints, userType });
+  } catch (error) {
+    console.error('Error fetching complaints:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+// Resolve or forward a complaint
+router.post('/complaints/update/:id', verifySignedIn, async (req, res) => {
+  try {
+    const complaintId = req.params.id;
+    const { status, resolutionMessage, forwardTo } = req.body;
+
+    if (status === 'resolved') {
+      await officerHelper.updateComplaintStatus(complaintId, 'resolved', resolutionMessage);
+    } else if (status === 'forwarded') {
+      await officerHelper.updateComplaintStatus(complaintId, 'forwarded', null, forwardTo);
+    }
+
+    res.redirect(`/officer/complaints`);
+  } catch (error) {
+    console.error('Error updating complaint:', error);
+    res.status(500).send('Internal Server Error');
+  }
 });
 
 module.exports = router;
