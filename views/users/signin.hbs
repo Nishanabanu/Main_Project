@@ -1,14 +1,14 @@
-<div class="top-navbar flex-between gap-16" style="height: 70px;">
+<div class="top-navbar flex-between gap-16" style="height: 70px;background-color: #37517E;"> 
 
     <!-- Toggle Button Start -->
 
 
-    <div class="flex-align gap-16">
-        <img src="/assets/img/logo.png" alt="logo" style="height: 50px; width: 60px;">
-        <h2 class="pt-5">ICDMS</h2>
+    <div class="flex-align gap-16" style="color: #37517E;">
+        <img src="/assets/img/logo_white.png" alt="logo" style="height: 50px; width: 60px;">
+        <h2 class="pt-5" style="color: white;">ICDMS</h2>
     </div>
 
-    <div class="flex-align gap-16">
+    <div class="flex-align gap-16" >
 
         <!-- User Profile Start -->
         {{#if user}}
@@ -16,7 +16,7 @@
             <button
                 class="users arrow-down-icon border border-gray-200 rounded-pill p-4 d-inline-block pe-40 position-relative"
                 type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                <span class="position-relative p-4">
+                <span class="position-relative p-4" >
                     Hey {{user.Fname}}
 
                 </span>
@@ -56,7 +56,7 @@
         <div class="dropdown">
             <a href="/"
                 class="users arrow-down-icon border border-gray-200 rounded-pill p-4 d-inline-block pe-40 position-relative">
-                <span class="position-relative p-4">
+                <span class="position-relative p-4" style="color: white;">
                     Back to Home
 
                 </span>
@@ -68,12 +68,12 @@
 
     </div>
 </div>
-<section class="auth d-flex">
-    <div class="auth-left bg-main-50 flex-center p-24">
-        <img src="/images/img/Logo.png" alt="">
+<section class="auth d-flex" >
+    <div class="auth-left  bg-main-50 flex-center p-24" >
+        <img src="/images/img/Logo.png" alt="" >
     </div>
     <div class="auth-right py-40 px-24 flex-center flex-column">
-        <div class="auth-right__inner mx-auto w-100">
+        <div class="auth-right__inner mx-auto w-100" >
 
             <h2 class="mb-8">Welome Back ! &#128075;</h2>
             {{!-- <p class="text-gray-600 text-15 mb-32">Please sign in to your account and start the adventure</p> --}}

@@ -1,20 +1,21 @@
 <!--==================== Sidebar Overlay End ====================-->
-<div class="side-overlay"></div>
+<div class="side-overlay">
+        </div>
 <!--==================== Sidebar Overlay End ====================-->
 
 <!-- ============================ Sidebar Start ============================ -->
 
-<aside class="sidebar">
+<aside class="sidebar" style="background-color: #37517E;">
     <!-- sidebar close btn -->
     <button type="button"
         class="sidebar-close-btn text-gray-500 hover-text-white hover-bg-main-600 text-md w-24 h-24 border border-gray-100 hover-border-main-600 d-xl-none d-flex flex-center rounded-circle position-absolute"><i
             class="ph ph-x"></i></button>
     <!-- sidebar close btn -->
 
-    <a href="/home" class="sidebar__logo text-center p-20 position-sticky inset-block-start-0 bg-white w-100 z-1 pb-10">
+    <a href="/home" class="sidebar__logo text-center p-20 position-sticky inset-block-start-0  w-100 z-1 pb-10" style="background-color: #37517E;">
 
 
-        <h3> <img src="/assets/img/logo.png" alt="logo" style="height: 50px; width: 60px;"> ICDMS</h3>
+        <h3> <img src="/assets/img/logo_white.png" alt="logo" style="height: 50px; width: 60px;"><span style="color:white">ICDMS</span></h3>
 
     </a>
 
@@ -24,8 +25,8 @@
 
                 <li class="sidebar-menu__item">
                     <a href="/home" class="sidebar-menu__link">
-                        <span class="icon"><i class="ph ph-squares-four"></i></span>
-                        <span class="text">Home</span>
+                        <span class="icon"><i class="ph ph-squares-four" style="color: white;"></i></span>
+                        <span class="text" style="color: white;">Home</span>
                     </a>
                 </li>
                 {{!-- <li class="sidebar-menu__item has-dropdown">
@@ -69,40 +70,40 @@
                 </li> --}}
                 <li class="sidebar-menu__item">
                     <a href="/requested" class="sidebar-menu__link">
-                        <span class="icon"><i class="ph ph-users-three"></i></span>
-                        <span class="text">society Registration</span>
+                        <span class="icon"><i class="ph ph-users-three" style="color: white;"></i></span>
+                        <span class="text" style="color: white;">society Registration</span>
                     </a>
                 </li>
 
                 <li class="sidebar-menu__item">
                     <a href="/bylawrequested" class="sidebar-menu__link">
-                        <span class="icon"><i class="ph ph-users"></i></span>
-                        <span class="text">By-Law Registration</span>
+                        <span class="icon"><i class="ph ph-users" style="color: white;"></i></span>
+                        <span class="text" style="color: white;">By-Law Registration</span>
                     </a>
                 </li>
                 <li class="sidebar-menu__item">
                     <a href="/audit" class="sidebar-menu__link">
-                        <span class="icon"><i class="ph ph-file-text"></i></span>
-                        <span class="text">Audit</span>
+                        <span class="icon"><i class="ph ph-file-text" style="color: white;"></i></span>
+                        <span class="text" style="color: white;">Audit</span>
                     </a>
                 </li>
 
                 <li class="sidebar-menu__item">
                     <a href="/training" class="sidebar-menu__link">
-                        <span class="icon"><i class="bi bi-book"></i></span>
-                        <span class="text">Study Materials</span>
+                        <span class="icon"><i class="bi bi-book" style="color: white;"></i></span>
+                        <span class="text" style="color: white;">Study Materials</span>
                     </a>
                 </li>
                 <li class="sidebar-menu__item"></li>
                     <a href="/chatbot" class="sidebar-menu__link">
-                        <span class="icon"><i class="bi bi-robot"></i></span>
-                        <span class="text">AI Chat Bot</span>
+                        <span class="icon"><i class="bi bi-robot" style="color: white;"></i></span>
+                        <span class="text" style="color: white;">AI Chat Bot</span>
                     </a>
                 </li>
                 <li class="sidebar-menu__item">
                     <a href="/complaints" class="sidebar-menu__link">
-                        <span class="icon"><i class="bi bi-chat-dots"></i></span>
-                        <span class="text">Complaints</span>
+                        <span class="icon"><i class="bi bi-chat-dots" style="color: white;"></i></span>
+                        <span class="text" style="color: white;">Complaints</span>
                     </a>
                 </li>
                 {{!-- <li class="sidebar-menu__item">
@@ -215,9 +216,9 @@
 </aside>
 <!-- ============================ Sidebar End  ============================ -->
 
-<div class="dashboard-main-wrapper">
+<div class="dashboard-main-wrapper" >
 
-    <div class="top-navbar flex-between gap-16">
+    <div class="top-navbar flex-between gap-16"  style="background-color: #37517E;">
 
         <div class="flex-align gap-16">
             <!-- Toggle Button Start -->
@@ -236,7 +237,7 @@
             </form> --}}
         </div>
 
-        <div class="flex-align gap-16">
+        <div class="flex-align gap-16" >
             <div class="flex-align gap-8">
                 {{!-- <!-- Notification Start -->
                 <div class="dropdown">
@@ -430,11 +431,11 @@
 
             <!-- User Profile Start -->
             {{#if user}}
-            <div class="dropdown">
+            <div class="dropdown" >
                 <button
                     class="users arrow-down-icon border border-gray-200 rounded-pill p-4 d-inline-block pe-40 position-relative"
                     type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    <span class="position-relative p-4">
+                    <span class="position-relative p-4"  style="color: white;">
                         Hey {{user.Fname}}
 
                     </span>

@@ -315,7 +315,7 @@ module.exports = {
       let registrations = await db
         .get()
         .collection(collections.REGISTRATION)
-        .find({ userId: new ObjectId(userId) })
+        .find({ userId: new ObjectId(userId) }).sort({ _id: -1 })
         .toArray();
       resolve(registrations);
     });
@@ -341,7 +341,7 @@ module.exports = {
       let bylawregistrations = await db
         .get()
         .collection(collections.BYLAWREGISTRATION)
-        .find({ userId: new ObjectId(userId) })
+        .find({ userId: new ObjectId(userId) }).sort({ _id: -1 })
         .toArray();
       resolve(bylawregistrations);
     });
@@ -362,7 +362,7 @@ module.exports = {
         // Fetch notifications based on userId (converted to ObjectId)
         const notifications = await db.get()
           .collection(collections.NOTIFICATIONS_COLLECTION)
-          .find({ userId: ObjectId(userId) }) // Filter by logged-in userId
+          .find({ userId: ObjectId(userId) }).sort({ _id: -1 }) // Filter by logged-in userId
           .toArray();
 
         resolve(notifications);
@@ -972,7 +972,7 @@ module.exports = {
   getAllAudits: () => {
     return new Promise(async (resolve, reject) => {
       try {
-        
+
         const audits = await db.get().collection(collections.AUDIT_COLLECTION).aggregate([
           {
             $lookup: {
@@ -1056,7 +1056,7 @@ module.exports = {
       try {
         const user = await db.get().collection(collections.USERS_COLLECTION).findOne({ _id: ObjectId(userId) });
         const completedMeerials = db.get().collection(collections.MATERIALS_COLLECTION).find({ _id: { $in: user.completedTrainingMaterials ?? [] } }).toArray();
-        resolve(completedMeerials);  
+        resolve(completedMeerials);
       } catch (error) {
         reject(error);
       }

@@ -745,7 +745,7 @@ module.exports = {
     return new Promise(async (resolve, reject) => {
       try {
         const notifications = await db.get().collection(collections.NOTIFICATIONS_COLLECTION)
-          .find({ officerId: objectId(officerId),isRead: false })
+          .find({ officerId: objectId(officerId), isRead: false })
           .sort({ timestamp: -1 })
           .toArray();
         resolve(notifications);
@@ -818,8 +818,19 @@ module.exports = {
     return new Promise(async (resolve, reject) => {
       try {
         const complaints = await db.get().collection(collections.COMPLAINTS_COLLECTION)
-          .find({ assignedTo: role ,status:{$ne:'resolved'}})
-          .sort({ createdAt: -1 })
+          .aggregate([
+            { $match: { assignedTo: role, status: { $ne: 'resolved' } } },
+            {
+              $lookup: {
+                from: collections.USERS_COLLECTION,
+                localField: 'userId',
+                foreignField: '_id',
+                as: 'userDetails'
+              }
+            },
+            { $unwind: { path: '$userDetails', preserveNullAndEmptyArrays: true } },
+            { $sort: { createdAt: -1 } }
+          ])
           .toArray();
         resolve(complaints);
       } catch (error) {

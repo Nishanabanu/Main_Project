@@ -7,6 +7,7 @@
         <thead class="table-light">
           <tr>
             <th>#</th>
+            <th>User</th>
             <th>Complaint</th>
             <th>Action</th>
           </tr>
@@ -14,7 +15,8 @@
         <tbody>
           {{#each complaints}}
             <tr>
-              <td>{{@index}}</td>
+                <td>{{incremented @index}}</td>
+                <td>{{this.userDetails.Fname}} {{this.userDetails.Lname}}</td>
               <td>{{this.text}}</td>  
               <td>
                 {{#if (and (eq ../userType "Assistant Registrar") (eq this.status "pending"))}}
